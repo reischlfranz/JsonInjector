@@ -50,7 +50,7 @@ public class JsonInjectorApp extends Application implements Runnable{
 
     stage.setTitle("JSON Injector");
 
-    scene = new Scene(root, 1200, 800);
+    scene = new Scene(root);
     stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
       @Override public void handle(WindowEvent t) {
         System.out.println("CLOSING");

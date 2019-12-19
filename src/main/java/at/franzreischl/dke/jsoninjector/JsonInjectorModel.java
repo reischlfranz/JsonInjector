@@ -35,7 +35,7 @@ public class JsonInjectorModel {
   private List<Object> jsonObjectsRemaining;
 
   public JsonInjectorModel() throws IOException {
-    fileDateFormat = DateTimeFormatter.ofPattern("YYYYMMdd-HHmm").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
+    fileDateFormat = DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
     logDateFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss.nn").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
     System.out.println(fileDateFormat.format(ZonedDateTime.now()));
 
@@ -67,5 +67,7 @@ public class JsonInjectorModel {
     pw.flush();
     pw.close();
   }
+
+
 
 }
