@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1"
+            prefHeight="400.0" prefWidth="600.0"
+            fx:controller="at.franzreischl.dke.jsoninjector.JsonInjectorUi">
+   <children>
+      <Button id="urlInputSetButton" layoutX="534.0" layoutY="14.0" mnemonicParsing="false" text="Button" />
+      <TextField id="urlInputField" layoutX="385.0" layoutY="14.0" />
+      <Label id="urlInputFieldLabel" layoutX="292.0" layoutY="14.0" prefHeight="25.0" prefWidth="93.0" text="Container URL:" />
+   </children>
+
+</AnchorPane>
