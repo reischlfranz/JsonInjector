@@ -1,5 +1,7 @@
 package at.franzreischl.dke.jsoninjector;
 
+import org.json.JSONArray;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,6 +14,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class JsonInjectorModel {
+
+  private JSONArray jsonObjects;
 
   public String getContainerUrl() {
     return containerUrl;
@@ -63,11 +67,23 @@ public class JsonInjectorModel {
 
   public void close(){
     System.out.println("Gracefully shutting down the application");
-    pw.println(String.format("[%s] Application shutdown",logDateFormat.format(ZonedDateTime.now())));
+    log("Application shutdown");
+//    pw.println(String.format("[%s] Application shutdown",logDateFormat.format(ZonedDateTime.now())));
     pw.flush();
     pw.close();
   }
 
+  private void log(String s){
+    pw.println(String.format("[%s] ",logDateFormat.format(ZonedDateTime.now())) + s);
+  }
 
 
+  public void setJsonData(JSONArray objects) {
+    this.jsonObjects = objects;
+    log(objects.length() + " JSON objects entered");
+  }
+
+  public JSONArray getJsonData() {
+    return this.jsonObjects;
+  }
 }

@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.json.JSONArray;
 
 import java.io.*;
 
@@ -31,6 +32,9 @@ public class JsonInjectorUi {
 
   @FXML
   private Button filePickerButton;
+
+  @FXML
+  private Label remainLblTest;
 
   public JsonInjectorUi() {
   }
@@ -60,6 +64,11 @@ public class JsonInjectorUi {
 
       String s = br.lines().reduce(String::concat).orElse("[]");
       System.out.println(s);
+
+      model.setJsonData(new JSONArray(s));
+      this.remainLblTest.setText(model.getJsonData().length() + " JSON objects remaining");
+      this.chkJsonFile.setSelected(true);
+      this.filePickerButton.setDisable(true);
 
       System.out.println(jsonFile.getAbsolutePath());
       System.out.println(jsonFile.getCanonicalPath());
