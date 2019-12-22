@@ -1,0 +1,17 @@
+.sectionHeader {
+    -fx-font-weight: bold;
+    -fx-underline: true;
+    -fx-font-size: 1.2em;
+    -fx-text-fill: #7a4b3d;
+}
+
+.isVisible {
+    visibility: true;
+}
+
+.isHidden {
+    visibility: false;
+    /*-fx-opacity: 0.5;*/
+}
+
+.mainContentPane {}

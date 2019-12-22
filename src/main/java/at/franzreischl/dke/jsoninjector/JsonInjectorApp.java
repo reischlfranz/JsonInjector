@@ -5,9 +5,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Control;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -45,7 +42,7 @@ public class JsonInjectorApp extends Application implements Runnable{
     loader.setLocation(this.getClass().getResource("JsonInjectorUi.fxml"));
     //scene = new Scene(loadFXML("JsonInjectorUi"));
     Parent root = loader.load();
-    JsonInjectorUi controller = loader.getController();
+    JsonInjectorView controller = loader.getController();
     controller.setModel(model);
 
     stage.setTitle("JSON Injector");
@@ -68,7 +65,7 @@ public class JsonInjectorApp extends Application implements Runnable{
   }
 
   public static Parent loadFXML(String fxml) throws IOException {
-    FXMLLoader fxmlLoader = new FXMLLoader(JsonInjectorUi.class.getResource(fxml + ".fxml"));
+    FXMLLoader fxmlLoader = new FXMLLoader(JsonInjectorView.class.getResource(fxml + ".fxml"));
     return fxmlLoader.load();
   }
 
