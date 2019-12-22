@@ -1,7 +1,9 @@
 package at.franzreischl.dke.jsoninjector;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
+import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -62,7 +64,19 @@ public class JsonInjectorModel {
 
 
   public String getContainerStatus(){
-    return statusReadClient.doGet(null).readEntity(String.class);
+    Response r = statusReadClient.doGet(null);
+    JSONObject jo = new JSONObject(r.readEntity(String.class));
+    if(r.getStatus() == 404) return "Offline";
+    if( jo.getBoolean("active")){
+      return "Active";
+    }else{
+      return "Busy";
+    }
+
+  }
+
+  public boolean isContainerReady(){
+    return getContainerStatus() == "Active";
   }
 
   public void close(){

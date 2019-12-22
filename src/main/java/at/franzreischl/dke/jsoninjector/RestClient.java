@@ -10,6 +10,8 @@ import java.net.URL;
 import java.util.Map;
 
 public class RestClient {
+    private static final int TIMEOUT_MILLIS = 5000;
+
     URL url;
     Client client = ClientBuilder.newClient(new ClientConfig()
 //                .register(MyClientResponseFilter.class)
