@@ -25,7 +25,7 @@ public class StatusChecker implements Runnable {
 
 
   public StatusChecker(String url){
-    rs = new RestClient(url,"status");
+    rs = new RestClient(url,"active");
     checkStatus();
     System.out.println(lastUpdate);
   }
@@ -39,9 +39,9 @@ public class StatusChecker implements Runnable {
       status = Status.OFFLINE;
     }else{
       jo = new JSONObject(responseBodyString);
-      if(responseCode == 200 && (Boolean) jo.get("active") == true ){
+      if(responseCode == 200 && jo.getBoolean("active") ){
         status = Status.OK;
-      }else if(responseCode == 200 && (Boolean) jo.get("active") == false ){
+      }else if(responseCode == 200 && !jo.getBoolean("active") ){
         status = Status.BUSY;
       }
     }
@@ -57,7 +57,7 @@ public class StatusChecker implements Runnable {
     while(true) {
       try {
 
-        Thread.sleep(1000);
+        Thread.sleep(10000);
         checkStatus();
         System.err.println("Container ist " +
                            (status == Status.OFFLINE ? "Offline!" :
