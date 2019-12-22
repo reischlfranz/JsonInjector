@@ -122,22 +122,19 @@ public class JsonInjectorView {
     fc.getExtensionFilters().add(new FileChooser.ExtensionFilter(".json","*.json"));
     File jsonFile = fc.showOpenDialog(new Stage());
     if(jsonFile != null){
+      model.log("Opening JSON file "+ jsonFile.getAbsolutePath());
       FileReader fr = new FileReader(jsonFile);
       BufferedReader br = new BufferedReader(fr);
 
       String s = br.lines().reduce(String::concat).orElse("[]");
       System.out.println(s);
 
+      fileNameLabel.setText(jsonFile.getAbsolutePath());
       model.setJsonData(new JSONArray(s));
-
       this.remainLblTotal.setText(model.getJsonData().length() + " JSON objects remaining");
+
       this.chkJsonFile.setSelected(true);
       this.filePickerButton.setDisable(true);
-
-      System.out.println(jsonFile.getAbsolutePath());
-      System.out.println(jsonFile.getCanonicalPath());
-
-      fileNameLabel.setText(jsonFile.getAbsolutePath());
     }
     checkReqs();
   }

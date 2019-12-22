@@ -59,6 +59,7 @@ public class JsonInjectorModel {
         statusCheckerThread.start();
 
         this.containerUrl = containerUrl;
+        log("set container URL to "+containerUrl);
       }
     } catch (MalformedURLException e) {
       log("URL format not correct!");
@@ -90,7 +91,7 @@ public class JsonInjectorModel {
     pw.close();
   }
 
-  private void log(String s){
+  void log(String s){
     pw.println(String.format("[%s] ",logDateFormat.format(ZonedDateTime.now())) + s);
   }
 
