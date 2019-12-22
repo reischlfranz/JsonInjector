@@ -2,6 +2,7 @@ package at.franzreischl.dke.jsoninjector;
 
 import org.json.*;
 import javax.ws.rs.core.Response;
+import java.net.MalformedURLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -24,7 +25,7 @@ public class StatusChecker implements Runnable {
   //String s = JsonInjectorModel.getContainerUrl();
 
 
-  public StatusChecker(String url){
+  public StatusChecker(String url) throws MalformedURLException {
     rs = new RestClient(url,"active");
     checkStatus();
     System.out.println(lastUpdate);

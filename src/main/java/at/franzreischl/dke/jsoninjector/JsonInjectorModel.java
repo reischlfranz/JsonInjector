@@ -7,6 +7,7 @@ import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
@@ -18,50 +19,53 @@ import java.util.TimeZone;
 public class JsonInjectorModel {
 
   private JSONArray jsonObjects;
-
-  public String getContainerUrl() {
-    return containerUrl;
-  }
-  public void setContainerUrl(String containerUrl) {
-    this.containerUrl = containerUrl;
-  }
-
-
-  private String containerUrl="http://localhost:4001/api";
-
-  private RestClient dataInputClient = new RestClient(containerUrl,"data");
-  private RestClient statusReadClient = new RestClient(containerUrl,"active");
+  private String containerUrl;
+  private RestClient dataInputClient;
+  private RestClient statusReadClient;
   private PrintWriter pw;
+  private StatusChecker statusChecker;
   DateTimeFormatter fileDateFormat;
   DateTimeFormatter logDateFormat;
-
-
-
   private int targetMinutesPerBatch;
   private List<Object> jsonObjectsRemaining;
+
+  private Thread statusCheckerThread;
 
   public JsonInjectorModel() throws IOException {
     fileDateFormat = DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
     logDateFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss.nn").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
-    System.out.println(fileDateFormat.format(ZonedDateTime.now()));
-
-    StatusChecker statusChecker = new StatusChecker(containerUrl);
-    Thread statusCheckerThread = new Thread(statusChecker);
-
-    statusCheckerThread.start();
-    System.out.println("Status checker thread started");
-
+    //System.out.println(fileDateFormat.format(ZonedDateTime.now()));
 
     BufferedWriter bw;
     bw = Files.newBufferedWriter(Paths.get(String.format("injectlog%s.txt",fileDateFormat.format(ZonedDateTime.now()))));
     pw = new PrintWriter(bw);
-    pw.println(String.format("[%s] Application started",logDateFormat.format(ZonedDateTime.now())));
 
-
+    log("Application started");
   }
 
+  public String getContainerUrl() {
+    return containerUrl;
+  }
 
+  public void setContainerUrl(String containerUrl) {
+    try {
+      statusReadClient = new RestClient(containerUrl, "active");
+      if(!isContainerReady()){
+        statusReadClient = null;
+      }else{
+        dataInputClient = new RestClient(containerUrl, "data");
+        statusChecker = new StatusChecker(containerUrl);
+        statusCheckerThread = new Thread(statusChecker);
+        statusCheckerThread.start();
 
+        this.containerUrl = containerUrl;
+      }
+    } catch (MalformedURLException e) {
+      log("URL format not correct!");
+
+    }
+
+  }
 
   public String getContainerStatus(){
     Response r = statusReadClient.doGet(null);
@@ -72,11 +76,10 @@ public class JsonInjectorModel {
     }else{
       return "Busy";
     }
-
   }
 
   public boolean isContainerReady(){
-    return getContainerStatus() == "Active";
+    return statusReadClient != null && getContainerStatus() == "Active";
   }
 
   public void close(){
@@ -91,7 +94,6 @@ public class JsonInjectorModel {
     pw.println(String.format("[%s] ",logDateFormat.format(ZonedDateTime.now())) + s);
   }
 
-
   public void setJsonData(JSONArray objects) {
     this.jsonObjects = objects;
     log(objects.length() + " JSON objects entered");
@@ -100,4 +102,6 @@ public class JsonInjectorModel {
   public JSONArray getJsonData() {
     return this.jsonObjects;
   }
+
+
 }

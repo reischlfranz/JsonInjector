@@ -112,6 +112,7 @@ public class JsonInjectorView {
       restUrlBtn.setDisable(false);
       restUrlField.setDisable(false);
     }
+    checkReqs();
     System.out.println(restUrlField.getText());
   }
 
@@ -128,6 +129,7 @@ public class JsonInjectorView {
       System.out.println(s);
 
       model.setJsonData(new JSONArray(s));
+
       this.remainLblTotal.setText(model.getJsonData().length() + " JSON objects remaining");
       this.chkJsonFile.setSelected(true);
       this.filePickerButton.setDisable(true);
@@ -137,8 +139,7 @@ public class JsonInjectorView {
 
       fileNameLabel.setText(jsonFile.getAbsolutePath());
     }
-
-    //TODO
+    checkReqs();
   }
 
 
@@ -147,5 +148,16 @@ public class JsonInjectorView {
 
   }
 
+  private void checkReqs(){
+    if(chkRestUrl.isSelected() && chkJsonFile.isSelected()){
+      mainPane.getChildren().stream()
+              .filter( x -> x.getStyleClass().contains("mainContentPane"))
+              .forEach( x -> {
+                x.getStyleClass().removeAll("isHidden");
+                x.getStyleClass().add("isVisible");
+              });
+    }
+
+  }
 
 }

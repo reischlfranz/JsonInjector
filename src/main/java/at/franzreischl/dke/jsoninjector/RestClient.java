@@ -18,13 +18,14 @@ public class RestClient {
 //                .register(new AnotherClientFilter()
     );
 
-    public RestClient(String baseUrl, String resource) {
+    public RestClient(String baseUrl, String resource) throws MalformedURLException {
         try {
             if (!baseUrl.endsWith("/")) baseUrl += '/';
             url = new URL(baseUrl + resource);
         } catch (MalformedURLException ue) {
 
         }
+        if(url == null) throw new MalformedURLException();
     }
 
     public Response doGet(Map<String, String> params) {
