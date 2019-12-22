@@ -3,9 +3,6 @@ package at.franzreischl.dke.jsoninjector;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.layout.AnchorPane;
@@ -36,10 +33,16 @@ public class JsonInjectorView {
   private Label fileNameLabel;
 
   @FXML
+  private Label totalLblBatch;
+
+  @FXML
   private Button filePickerButton;
 
   @FXML
   private Label remainLblTotal;
+
+  @FXML
+  private Label objectsLblTotal;
 
   @FXML
   private ProgressBar progrBarBatch;
@@ -91,6 +94,7 @@ public class JsonInjectorView {
                 x.getStyleClass().add("isHidden");
            });
     batchProcessingWaitPane.getStyleClass().add("isHidden");
+
   }
 
   public JsonInjectorModel getModel() {
@@ -99,6 +103,17 @@ public class JsonInjectorView {
 
   public void setModel(JsonInjectorModel model) {
     this.model = model;
+    remainLblTotal.textProperty()       .bind(model.remainingObjectsProperty.asString() );
+    remainLblBatch.textProperty()       .bind(model.currentBatchRemainProperty.asString() );
+//    curBatchTimeLbl.textProperty()      .bind(model.y.asString() );
+//    curBatchOPMLbl.textProperty()       .bind(model.y.asString() );
+//    lastBatchOPMLbl.textProperty()      .bind(model.y.asString() );
+//    totalOPMLbl.textProperty()          .bind(model.y.asString() );
+//    objectsDoneLblTotal.textProperty()  .bind(model.y.asString() );
+    objectsLblTotal.textProperty()      .bind(model.totalObjectsProperty.asString() );
+    nextBatchObjCntLabel.textProperty() .bind(model.nextBatchSizeProperty.asString() );
+    totalLblBatch.textProperty()        .bind(model.currentBatchSizeProperty.asString() );
+
   }
 
   @FXML
@@ -131,7 +146,7 @@ public class JsonInjectorView {
 
       fileNameLabel.setText(jsonFile.getAbsolutePath());
       model.setJsonData(new JSONArray(s));
-      this.remainLblTotal.setText(model.getJsonData().length() + " JSON objects remaining");
+//      this.remainLblTotal.setText(model.getJsonData().length() + " JSON objects remaining");
 
       this.chkJsonFile.setSelected(true);
       this.filePickerButton.setDisable(true);

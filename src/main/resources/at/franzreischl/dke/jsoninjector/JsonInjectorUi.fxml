@@ -38,7 +38,7 @@
             <Label layoutX="22.0" layoutY="41.0" prefHeight="17.0" prefWidth="186.0" text="Loading data into container:" />
             <Label layoutX="10.0" layoutY="10.0" styleClass="sectionHeader" text="Current Batch" />
             <ProgressBar fx:id="progrBarBatch" layoutX="22.0" layoutY="59.0" prefHeight="18.0" prefWidth="1000.0" progress="0.0" />
-            <Label fx:id="remainLblBatch" alignment="CENTER_RIGHT" layoutX="877.0" layoutY="41.0" prefHeight="17.0" prefWidth="145.0" text="x.xxx.xxx / y.yyy.yyy" />
+            <Label fx:id="totalLblBatch" alignment="CENTER_RIGHT" layoutX="950.0" layoutY="41.0" prefHeight="17.0" prefWidth="72.0" text="y.yyy.yyy" />
             <Label layoutX="708.0" layoutY="93.0" text="Current batch time:" />
             <Label layoutX="708.0" layoutY="120.0" text="Est. objects per minute:" />
             <Label fx:id="curBatchTimeLbl" layoutX="863.0" layoutY="93.0" text="Label" />
@@ -49,6 +49,8 @@
                   <ProgressIndicator layoutX="6.0" layoutY="20.0" />
                </children>
             </Pane>
+            <Label fx:id="remainLblBatch" alignment="CENTER_RIGHT" layoutX="785.0" layoutY="41.0" prefHeight="17.0" prefWidth="145.0" text="x.xxx.xxx" />
+            <Label layoutX="936.0" layoutY="41.0" text="/" />
          </children>
       </Pane>
       <Pane layoutX="14.0" layoutY="516.0" prefHeight="116.0" prefWidth="1044.0" style="-fx-background-color: #cccccc;" styleClass="mainContentPane">
@@ -59,7 +61,9 @@
             <Label layoutX="22.0" layoutY="85.0" text="Objects per minute (Total average):" />
             <Label fx:id="lastBatchOPMLbl" layoutX="248.0" layoutY="68.0" text="Label" />
             <Label fx:id="totalOPMLbl" layoutX="248.0" layoutY="85.0" text="Label" />
-            <Label fx:id="objectsDoneLblTotal" alignment="CENTER_RIGHT" layoutX="921.0" layoutY="28.0" text="x.xxx.xxx / y.yyy.yyy" />
+            <Label fx:id="objectsDoneLblTotal" alignment="CENTER_RIGHT" layoutX="844.0" layoutY="28.0" prefHeight="17.0" prefWidth="89.0" text="x.xxx.xxx" />
+            <Label fx:id="objectsLblTotal" alignment="CENTER_RIGHT" layoutX="952.0" layoutY="28.0" prefHeight="17.0" prefWidth="70.0" text="y.yyy.yyy" />
+            <Label layoutX="939.0" layoutY="28.0" text="/" />
          </children>
       </Pane>
       <Pane layoutX="424.0" layoutY="79.0" prefHeight="158.0" prefWidth="633.0" style="-fx-background-color: #cccccc;" styleClass="mainContentPane">

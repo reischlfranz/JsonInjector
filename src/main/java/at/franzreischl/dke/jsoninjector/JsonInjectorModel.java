@@ -1,5 +1,6 @@
 package at.franzreischl.dke.jsoninjector;
 
+import javafx.beans.property.SimpleLongProperty;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -19,6 +20,13 @@ import java.util.TimeZone;
 public class JsonInjectorModel {
 
   private JSONArray jsonObjects;
+  private long nextObject = 0;
+  SimpleLongProperty remainingObjectsProperty = new SimpleLongProperty(0);
+  SimpleLongProperty totalObjectsProperty = new SimpleLongProperty(0);
+  SimpleLongProperty nextBatchSizeProperty = new SimpleLongProperty(0);
+  SimpleLongProperty currentBatchSizeProperty = new SimpleLongProperty(0);
+  SimpleLongProperty currentBatchRemainProperty = new SimpleLongProperty(0);
+
   private String containerUrl;
   private RestClient dataInputClient;
   private RestClient statusReadClient;
@@ -27,6 +35,7 @@ public class JsonInjectorModel {
   DateTimeFormatter fileDateFormat;
   DateTimeFormatter logDateFormat;
   private int targetMinutesPerBatch;
+
   private List<Object> jsonObjectsRemaining;
 
   private Thread statusCheckerThread;
@@ -97,6 +106,7 @@ public class JsonInjectorModel {
 
   public void setJsonData(JSONArray objects) {
     this.jsonObjects = objects;
+    remainingObjectsProperty.set(objects.length());
     log(objects.length() + " JSON objects entered");
   }
 
