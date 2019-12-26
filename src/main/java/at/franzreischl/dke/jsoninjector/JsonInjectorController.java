@@ -113,16 +113,23 @@ public class JsonInjectorController {
 
   public void setModel(JsonInjectorModel model) {
     this.model = model;
+    // Bind value properties for UI
+    // Objects remaining
     remainLblTotal.textProperty()       .bind(model.remainingObjectsProperty.asString() );
     remainLblBatch.textProperty()       .bind(model.currentBatchRemainProperty.asString() );
-//    curBatchTimeLbl.textProperty()      .bind(model.y.asString() );
-//    curBatchOPMLbl.textProperty()       .bind(model.y.asString() );
+
+    // Next batch
 //    lastBatchOPMLbl.textProperty()      .bind(model.y.asString() );
 //    totalOPMLbl.textProperty()          .bind(model.y.asString() );
 //    objectsDoneLblTotal.textProperty()  .bind(model.y.asString() );
     objectsLblTotal.textProperty()      .bind(model.totalObjectsProperty.asString() );
     nextBatchObjCntLabel.textProperty() .bind(model.nextBatchSizeProperty.asString() );
     totalLblBatch.textProperty()        .bind(model.currentBatchSizeProperty.asString() );
+
+    // Current Batch
+    progrBarBatch.progressProperty()    .bind(model.currentBatchProgress);
+//    curBatchTimeLbl.textProperty()      .bind(model.y.asString() );
+//    curBatchOPMLbl.textProperty()       .bind(model.y.asString() );
 
     // DEBUG TODO remove these lines
     try {
@@ -194,6 +201,11 @@ public class JsonInjectorController {
               });
     }
 
+  }
+
+  @FXML
+  private void startInjection(){
+    model.startInjection();
   }
 
 }

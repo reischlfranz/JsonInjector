@@ -1,5 +1,8 @@
 package at.franzreischl.dke.jsoninjector;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,6 +31,11 @@ public class JsonInjectorModel {
   SimpleLongProperty nextBatchSizeProperty = new SimpleLongProperty(0);
   SimpleLongProperty currentBatchSizeProperty = new SimpleLongProperty(0);
   SimpleLongProperty currentBatchRemainProperty = new SimpleLongProperty(0);
+
+  SimpleDoubleProperty currentBatchProgress = new SimpleDoubleProperty(0.25);
+
+  Property<Boolean> runs = new SimpleBooleanProperty(false);
+
 
   private String containerUrl;
   private RestClient dataInputClient;
@@ -131,6 +139,7 @@ public class JsonInjectorModel {
 
   void prepareNextBatch(){
     long nextBatchSize;
+    if(nextObject < 0) return;
 
     if (lastBatch == null ){
        nextBatchSize = 1;
@@ -140,24 +149,43 @@ public class JsonInjectorModel {
     }else{
         nextBatchSize = (long) (( targetMinutesPerBatch * lastBatch.getOpm() - lastBatch.size()) *  0.60 +  targetMinutesPerBatch * lastBatch.getOpm());
     }
+    if(nextBatchSize > dataList.size() - nextObject - 1){
+      nextBatchSize = dataList.size() - nextObject - 1;
+      nextObject = -1;
+    }
 
     List<Object> nextBatchData = dataList.subList((int)nextObject, (int)(nextObject + nextBatchSize));
 
     nextBatch = new BatchDataInjector(this.dataInputClient, nextBatchData, this);
     nextObject += nextBatchSize;
 
-    log("");
-
-    System.err.println("next batch size: " + nextBatchSize);
-
+    log("Next batch prepared, size: " + nextBatch);
+  }
 
 
+  void startInjection(){
+    runs.setValue(true);
+    while(runs.getValue() && nextBatch != null){
+      currentBatch = nextBatch;
+      nextBatch = null;
+
+      // bind properties for current batch
 
 
 
+      try {
+        currentBatch.startInject();
+      } catch (IllegalAccessException | InterruptedException e) {
+        e.printStackTrace();
+        runs.setValue(false);
+        return;
+      }
 
+      lastBatch = currentBatch;
+      currentBatch = null;
 
-
+      prepareNextBatch();
+    }
 
   }
 
