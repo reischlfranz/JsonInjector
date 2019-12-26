@@ -39,10 +39,10 @@ public class JsonInjectorApp extends Application implements Runnable{
     String javaVersion = System.getProperty("java.version");
     String javafxVersion = System.getProperty("javafx.version");
     FXMLLoader loader = new FXMLLoader();
-    loader.setLocation(this.getClass().getResource("JsonInjectorUi.fxml"));
+    loader.setLocation(this.getClass().getResource("JsonInjectorView.fxml"));
     //scene = new Scene(loadFXML("JsonInjectorUi"));
     Parent root = loader.load();
-    JsonInjectorView controller = loader.getController();
+    JsonInjectorController controller = loader.getController();
     controller.setModel(model);
 
     stage.setTitle("JSON Injector");
@@ -65,7 +65,7 @@ public class JsonInjectorApp extends Application implements Runnable{
   }
 
   public static Parent loadFXML(String fxml) throws IOException {
-    FXMLLoader fxmlLoader = new FXMLLoader(JsonInjectorView.class.getResource(fxml + ".fxml"));
+    FXMLLoader fxmlLoader = new FXMLLoader(JsonInjectorController.class.getResource(fxml + ".fxml"));
     return fxmlLoader.load();
   }
 

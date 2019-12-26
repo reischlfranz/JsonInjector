@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleLongProperty;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,14 +14,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 public class JsonInjectorModel {
 
-  private JSONArray jsonObjects;
-  private long nextObject = 0;
+  private long nextObject = 0, batchIndex = 0;
+
   SimpleLongProperty remainingObjectsProperty = new SimpleLongProperty(0);
   SimpleLongProperty totalObjectsProperty = new SimpleLongProperty(0);
   SimpleLongProperty nextBatchSizeProperty = new SimpleLongProperty(0);
@@ -36,7 +38,11 @@ public class JsonInjectorModel {
   DateTimeFormatter logDateFormat;
   private int targetMinutesPerBatch;
 
-  private List<Object> jsonObjectsRemaining;
+  private BatchDataInjector lastBatch, nextBatch, currentBatch;
+
+
+
+  private ArrayList<Object> dataList;
 
   private Thread statusCheckerThread;
 
@@ -58,6 +64,7 @@ public class JsonInjectorModel {
 
   public void setContainerUrl(String containerUrl) {
     try {
+      log("set container URL to "+containerUrl);
       statusReadClient = new RestClient(containerUrl, "active");
       if(!isContainerReady()){
         statusReadClient = null;
@@ -68,7 +75,7 @@ public class JsonInjectorModel {
         statusCheckerThread.start();
 
         this.containerUrl = containerUrl;
-        log("set container URL to "+containerUrl);
+        log("Container Connection OK");
       }
     } catch (MalformedURLException e) {
       log("URL format not correct!");
@@ -78,7 +85,13 @@ public class JsonInjectorModel {
   }
 
   public String getContainerStatus(){
-    Response r = statusReadClient.doGet(null);
+    Response r;
+    try {
+      r = statusReadClient.doGet(null);
+    }catch (ProcessingException e){
+      e.printStackTrace();
+      return "Offline";
+    }
     JSONObject jo = new JSONObject(r.readEntity(String.class));
     if(r.getStatus() == 404) return "Offline";
     if( jo.getBoolean("active")){
@@ -104,15 +117,52 @@ public class JsonInjectorModel {
     pw.println(String.format("[%s] ",logDateFormat.format(ZonedDateTime.now())) + s);
   }
 
-  public void setJsonData(JSONArray objects) {
-    this.jsonObjects = objects;
-    remainingObjectsProperty.set(objects.length());
-    log(objects.length() + " JSON objects entered");
+  public void setDataList(List<Object> objects) {
+    if(objects == null) return;
+    dataList = new ArrayList<>(objects);
+    remainingObjectsProperty.set(objects.size());
+    log(objects.size() + " JSON objects entered");
   }
 
-  public JSONArray getJsonData() {
-    return this.jsonObjects;
+//  public JSONArray getJsonData() {
+//    return this.jsonObjects;
+//  }
+
+
+  void prepareNextBatch(){
+    long nextBatchSize;
+
+    if (lastBatch == null ){
+       nextBatchSize = 1;
+     }else if(targetMinutesPerBatch * lastBatch.getOpm() < lastBatch.size()
+              || Math.abs( targetMinutesPerBatch * lastBatch.getOpm() - lastBatch.size()) < 2){
+       nextBatchSize = (long) (targetMinutesPerBatch * lastBatch.getOpm());
+    }else{
+        nextBatchSize = (long) (( targetMinutesPerBatch * lastBatch.getOpm() - lastBatch.size()) *  0.60 +  targetMinutesPerBatch * lastBatch.getOpm());
+    }
+
+    List<Object> nextBatchData = dataList.subList((int)nextObject, (int)(nextObject + nextBatchSize));
+
+    nextBatch = new BatchDataInjector(this.dataInputClient, nextBatchData, this);
+    nextObject += nextBatchSize;
+
+    log("");
+
+    System.err.println("next batch size: " + nextBatchSize);
+
+
+
+
+
+
+
+
+
+
   }
+
+
+
 
 
 }
