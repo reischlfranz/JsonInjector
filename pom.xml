@@ -82,7 +82,7 @@
       <artifactId>javafx-maven-plugin</artifactId>
       <version>0.0.3</version>
       <configuration>
-        <mainClass>at.franzreischl.dke.jsoninjector.JsonInjectorView</mainClass>
+        <mainClass>at.franzreischl.dke.jsoninjector.JsonInjectorController</mainClass>
       </configuration>
     </plugin>
   </plugins>

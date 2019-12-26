@@ -12,8 +12,11 @@ import javafx.stage.Stage;
 import org.json.JSONArray;
 
 import java.io.*;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
-public class JsonInjectorView {
+public class JsonInjectorController {
 
   private JsonInjectorModel model;
 
@@ -33,28 +36,28 @@ public class JsonInjectorView {
   private Label fileNameLabel;
 
   @FXML
-  private Label totalLblBatch;
-
-  @FXML
   private Button filePickerButton;
 
   @FXML
   private Label remainLblTotal;
 
   @FXML
-  private Label objectsLblTotal;
-
-  @FXML
   private ProgressBar progrBarBatch;
 
   @FXML
-  private Label remainLblBatch;
+  private Label totalLblBatch;
 
   @FXML
   private Label curBatchTimeLbl;
 
   @FXML
   private Label curBatchOPMLbl;
+
+  @FXML
+  private Pane batchProcessingWaitPane;
+
+  @FXML
+  private Label remainLblBatch;
 
   @FXML
   private ProgressBar progrBarTotal;
@@ -69,6 +72,9 @@ public class JsonInjectorView {
   private Label objectsDoneLblTotal;
 
   @FXML
+  private Label objectsLblTotal;
+
+  @FXML
   private Spinner<Integer> nextBatchTargetField;
 
   @FXML
@@ -77,10 +83,7 @@ public class JsonInjectorView {
   @FXML
   private TextField restUrlField;
 
-  @FXML
-  private Pane batchProcessingWaitPane;
-
-  public JsonInjectorView() {
+  public JsonInjectorController() {
   }
 
   public void initialize(){
@@ -94,6 +97,13 @@ public class JsonInjectorView {
                 x.getStyleClass().add("isHidden");
            });
     batchProcessingWaitPane.getStyleClass().add("isHidden");
+
+    // Set the spinner field limits for batch time target.
+    nextBatchTargetField.setValueFactory(
+            new SpinnerValueFactory.IntegerSpinnerValueFactory(1,9999,1));
+    nextBatchTargetField.valueProperty().addListener((obs,oldVal,newVal)->{
+            model.prepareNextBatch();
+    });
 
   }
 
@@ -114,13 +124,50 @@ public class JsonInjectorView {
     nextBatchObjCntLabel.textProperty() .bind(model.nextBatchSizeProperty.asString() );
     totalLblBatch.textProperty()        .bind(model.currentBatchSizeProperty.asString() );
 
+    // DEBUG TODO remove these lines
+    try {
+      openJsonFile(Paths.get("C:\\Users\\Franzi\\OneDrive\\IT-Projekt Wirtschaftsinformatik\\WP2\\seismic.json").toFile());
+      this.setContainerUrl("http://localhost:4001/api");
+    } catch (IOException e) {       e.printStackTrace();     }
+    // DEBUG END
   }
 
   @FXML
   private void enterContainerUrl(ActionEvent actionEvent) {
+    setContainerUrl(restUrlField.getText());
+  }
+
+  @FXML
+  private void openJsonFileButton(ActionEvent actionEvent) throws IOException {
+    FileChooser fc = new FileChooser();
+    fc.getExtensionFilters().add(new FileChooser.ExtensionFilter(".json","*.json"));
+    File jsonFile = fc.showOpenDialog(new Stage());
+    if(jsonFile != null) {
+      openJsonFile(jsonFile);
+    }
+  }
+
+  private void openJsonFile(File jsonFile) throws IOException{
+    model.log("Opening JSON file "+ jsonFile.getAbsolutePath());
+    FileReader fr = new FileReader(jsonFile);
+    BufferedReader br = new BufferedReader(fr);
+
+    String s = br.lines().reduce(String::concat).orElse("[]");
+    //  System.out.println(s);
+    fileNameLabel.setText(jsonFile.getAbsolutePath());
+    model.setDataList(new ArrayList<Object>(new JSONArray(s).toList()));
+
+    this.chkJsonFile.setSelected(true);
+    this.filePickerButton.setDisable(true);
+    checkReqs();
+
+  }
+
+  private void setContainerUrl(String url) {
     restUrlBtn.setDisable(true);
     restUrlField.setDisable(true);
-    model.setContainerUrl(restUrlField.getText());
+    restUrlField.setText(url);
+    model.setContainerUrl(url);
     if(model.isContainerReady()){
       chkRestUrl.setSelected(true);
     }else{
@@ -128,35 +175,12 @@ public class JsonInjectorView {
       restUrlField.setDisable(false);
     }
     checkReqs();
-    System.out.println(restUrlField.getText());
-  }
-
-  @FXML
-  private void openJsonFile(ActionEvent actionEvent) throws IOException {
-    FileChooser fc = new FileChooser();
-    fc.getExtensionFilters().add(new FileChooser.ExtensionFilter(".json","*.json"));
-    File jsonFile = fc.showOpenDialog(new Stage());
-    if(jsonFile != null){
-      model.log("Opening JSON file "+ jsonFile.getAbsolutePath());
-      FileReader fr = new FileReader(jsonFile);
-      BufferedReader br = new BufferedReader(fr);
-
-      String s = br.lines().reduce(String::concat).orElse("[]");
-      System.out.println(s);
-
-      fileNameLabel.setText(jsonFile.getAbsolutePath());
-      model.setJsonData(new JSONArray(s));
-//      this.remainLblTotal.setText(model.getJsonData().length() + " JSON objects remaining");
-
-      this.chkJsonFile.setSelected(true);
-      this.filePickerButton.setDisable(true);
-    }
-    checkReqs();
   }
 
 
   @FXML
   void setNextBatchMinutes(InputMethodEvent event) {
+    model.prepareNextBatch();
 
   }
 
