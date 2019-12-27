@@ -162,7 +162,6 @@ public class JsonInjectorModel {
     log("Next batch prepared, size: " + nextBatch.size());
   }
 
-
   void startInjection(){
     runs.setValue(true);
     prepareNextBatch();
@@ -174,46 +173,18 @@ public class JsonInjectorModel {
 
       // bind properties for current batch
 
-
-
-
       try {
-
-        HashMap<?,?> ob;
-        JSONObject jo;
-        RestClient testClient = new RestClient("http://localhost:8080/middleware-api","status");
-        log(testClient.doGet(null).readEntity(String.class));
-        ob = (HashMap) dataList.get(0);
-        jo = new JSONObject(ob);
-        //jo = new JSONObject();
-
-        log("testing JSON Object posting...");
-        Response r = testClient.doPostJsonObject(null, new JSONArray(dataList.subList(0,5)));
-        r.getHeaders().forEach( (x, k) -> log(" -- " + x + ": " + k));
-        log(r.readEntity(String.class));
-
-
-
-        dataInputClient.doPost(null, jo);
-        log("DEBUG Single thing posted...");
-
         currentBatch.startInject();
       } catch (IllegalAccessException | InterruptedException e) {
         e.printStackTrace();
         runs.setValue(false);
         return;
-      } catch (MalformedURLException e) {
-        e.printStackTrace();
       }
 
-      // stop after 1 try for now
-      log("ABORT AFTER FIRST INJECTION!");
-      return;
+      lastBatch = currentBatch;
+      currentBatch = null;
 
-//      lastBatch = currentBatch;
-//      currentBatch = null;
-//
-//      prepareNextBatch();
+      prepareNextBatch();
     }
 
   }
