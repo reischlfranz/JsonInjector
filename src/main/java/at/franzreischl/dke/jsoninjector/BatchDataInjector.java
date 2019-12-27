@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Timer;
 
 public class BatchDataInjector {
-  private static int batchIndexCounter = 0;
+  static int batchIndexCounter = 0;
 
   private RestClient rc;
 
@@ -55,12 +55,19 @@ public class BatchDataInjector {
     doneTime = Instant.now();
     caller.log("Batch " + batchIndex + ": Data processing by container done in " + getBatchDurationMillis() + "ms");
     done = true;
+
+    caller.log("Batch " + batchIndex + ": Objects per minute: " + getOpm() );
   }
 
 
   double getOpm(){
     if(!done) return -1.0;
-    return batchData.size() / ( (doneTime.toEpochMilli() - startTime.toEpochMilli()) /1000 /60);
+
+    long d = doneTime.toEpochMilli();
+    long s = startTime.toEpochMilli();
+    long diff = d - s;
+    if (diff <1) diff = 1;
+    return batchData.size() / ( ((double)diff /1000 /60));
   }
 
   long getLoadDurationMillis(){

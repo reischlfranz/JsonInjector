@@ -42,6 +42,11 @@ public class JsonInjectorModel {
   private StatusChecker statusChecker;
   DateTimeFormatter fileDateFormat;
   DateTimeFormatter logDateFormat;
+
+  public void setTargetMinutesPerBatch(int targetMinutesPerBatch) {
+    this.targetMinutesPerBatch = targetMinutesPerBatch;
+  }
+
   private int targetMinutesPerBatch;
 
   private BatchDataInjector lastBatch, nextBatch, currentBatch;
@@ -138,8 +143,14 @@ public class JsonInjectorModel {
 
 
   void prepareNextBatch(){
+    boolean isLastBatch = false;
     long nextBatchSize;
-    if(nextObject < 0) return;
+    if(nextObject < 0) {
+      nextBatch = null;
+      return;
+
+    }
+    if(nextObject >= dataList.size()) throw new IndexOutOfBoundsException("Is all done, dude!");
 
     if (lastBatch == null ){
        nextBatchSize = 1;
@@ -149,17 +160,19 @@ public class JsonInjectorModel {
     }else{
         nextBatchSize = (long) (( targetMinutesPerBatch * lastBatch.getOpm() - lastBatch.size()) *  0.60 +  targetMinutesPerBatch * lastBatch.getOpm());
     }
-    if(nextBatchSize > dataList.size() - nextObject - 1){
+    if(nextBatchSize >= dataList.size() - nextObject - 1){
       nextBatchSize = dataList.size() - nextObject - 1;
-      nextObject = -1;
+      isLastBatch = true;
     }
 
     List<Object> nextBatchData = dataList.subList((int)nextObject, (int)(nextObject + nextBatchSize));
+
 
     nextBatch = new BatchDataInjector(this.dataInputClient, nextBatchData, this);
     nextObject += nextBatchSize;
 
     log("Next batch prepared, size: " + nextBatch.size());
+    if(isLastBatch){nextObject = -1;}
   }
 
   void startInjection(){
@@ -186,6 +199,8 @@ public class JsonInjectorModel {
 
       prepareNextBatch();
     }
+    log("All done: " + BatchDataInjector.batchIndexCounter + " Batches done!" );
+
 
   }
 

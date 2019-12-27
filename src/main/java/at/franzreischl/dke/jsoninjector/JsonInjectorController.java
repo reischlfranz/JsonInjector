@@ -126,10 +126,14 @@ public class JsonInjectorController {
     nextBatchObjCntLabel.textProperty() .bind(model.nextBatchSizeProperty.asString() );
     totalLblBatch.textProperty()        .bind(model.currentBatchSizeProperty.asString() );
 
+
     // Current Batch
     progrBarBatch.progressProperty()    .bind(model.currentBatchProgress);
 //    curBatchTimeLbl.textProperty()      .bind(model.y.asString() );
 //    curBatchOPMLbl.textProperty()       .bind(model.y.asString() );
+
+    // set initial model values
+    model.setTargetMinutesPerBatch(nextBatchTargetField.getValue());
 
     // DEBUG TODO remove these lines
     try {
@@ -189,7 +193,7 @@ public class JsonInjectorController {
 
   @FXML
   void setNextBatchMinutes(InputMethodEvent event) {
-    model.prepareNextBatch();
+    model.setTargetMinutesPerBatch(nextBatchTargetField.getValue());
 
   }
 
