@@ -134,7 +134,7 @@ public class JsonInjectorController {
     // DEBUG TODO remove these lines
     try {
       openJsonFile(Paths.get("C:\\Users\\Franzi\\OneDrive\\IT-Projekt Wirtschaftsinformatik\\WP2\\seismic.json").toFile());
-      this.setContainerUrl("http://localhost:4001/api");
+      this.setContainerUrl("http://localhost:4000/api");
     } catch (IOException e) {       e.printStackTrace();     }
     // DEBUG END
   }
@@ -162,7 +162,9 @@ public class JsonInjectorController {
     String s = br.lines().reduce(String::concat).orElse("[]");
     //  System.out.println(s);
     fileNameLabel.setText(jsonFile.getAbsolutePath());
-    model.setDataList(new ArrayList<Object>(new JSONArray(s).toList()));
+    JSONArray ja = new JSONArray(s);
+    List l = ja.toList();
+    model.setDataList(new JSONArray(s).toList());
 
     this.chkJsonFile.setSelected(true);
     this.filePickerButton.setDisable(true);
@@ -205,6 +207,7 @@ public class JsonInjectorController {
 
   @FXML
   private void startInjection(){
+    model.log("Start button pressed!");
     model.startInjection();
   }
 

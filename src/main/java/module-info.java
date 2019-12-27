@@ -9,7 +9,8 @@ module at.franzreischl.dke.jsoninjector {
     /* For the missing org.glassfish.jersey.ExtendedConfig */
     requires jersey.common;
     requires javafx.controls;
+  requires java.sql;
 
-    opens at.franzreischl.dke.jsoninjector to javafx.fxml;
+  opens at.franzreischl.dke.jsoninjector to javafx.fxml;
     exports at.franzreischl.dke.jsoninjector;
 }

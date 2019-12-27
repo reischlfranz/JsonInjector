@@ -1,10 +1,14 @@
 package at.franzreischl.dke.jsoninjector;
 
 import org.glassfish.jersey.client.ClientConfig;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.ws.rs.client.*;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.sql.Date;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
@@ -29,125 +33,133 @@ public class RestClient {
     }
 
     public Response doGet(Map<String, String> params) {
-
-
         WebTarget webTarget = client.target(url.toString());
         if (params != null) {
             for (String s : params.keySet()) {
                 webTarget = webTarget.queryParam(s, params.get(s));
             }
         }
-
-//        System.out.println("  GET    " + webTarget.getUri().toString() + " ...");
-
-        Invocation.Builder invocationBuilder =
-                webTarget.request(MediaType.APPLICATION_JSON);
-//        invocationBuilder.header("some-header", "true");
-
+        Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON);
         Response response = invocationBuilder.get();
-
-//        System.out.println("  > Status: " + response.getStatus() + " - " + response.getStatusInfo().getReasonPhrase());
-//        for (String s : response.getStringHeaders().keySet()) {
-//            System.out.println("  > Header: " + s + " - " + response.getStringHeaders().get(s));
-//        }
-//        System.out.println("  > Data:   " + response.readEntity(String.class));
         return response;
     }
 
     public Response doPost(Map<String, String> params, Object data) {
-//        Client client = ClientBuilder.newClient(new ClientConfig()
-////                .register(MyClientResponseFilter.class)
-////                .register(new AnotherClientFilter()
-//        );
-
         WebTarget webTarget = client.target(url.toString());
         if (params != null) {
             for (String s : params.keySet()) {
                 webTarget = webTarget.queryParam(s, params.get(s));
             }
         }
-
-//        System.out.println("REST-Aufruf Middleware:");
-//        System.out.println("  PUT    " + webTarget.getUri().toString() + " ...");
-
         Invocation.Builder invocationBuilder =
                 webTarget.request(MediaType.APPLICATION_JSON);
-//        invocationBuilder.header("some-header", "true");
+        Entity entity = Entity.entity(data, MediaType.APPLICATION_JSON_TYPE);
+        Response response = invocationBuilder.post(entity);
+        return response;
+    }
 
+    public Response doPostJsonObject(Map<String, String> params, JSONObject data) {
+//        System.err.println("POSTING json object: \n"+data.toString());
+        WebTarget webTarget = client.target(url.toString());
+        if (params != null) {
+            for (String s : params.keySet()) {
+                webTarget = webTarget.queryParam(s, params.get(s));
+            }
+        }
+        Invocation.Builder invocationBuilder =
+                webTarget.request(MediaType.APPLICATION_JSON);
         Entity entity = Entity.entity(data, MediaType.APPLICATION_JSON_TYPE);
 
-        Response response
-                = invocationBuilder
-                .post(entity);
+        Response response = invocationBuilder.post(Entity.json(data.toString()));
+        return response;
+    }
 
-//        System.out.println("  > Status: " + response.getStatus() + " - " + response.getStatusInfo().getReasonPhrase());
-//        for (String s : response.getStringHeaders().keySet()) {
-//            System.out.println("  > Header: " + s + " - " + response.getStringHeaders().get(s));
-//        }
-//        System.out.println("  > Data:   " + response.readEntity(String.class));
+    public Response doPostMap(Map<String, String> params, Map<String, Object> data) {
+        return doPostJsonObject(params, new JSONObject(data));
+    }
+
+    public Response doPostJsonObject(Map<String, String> params, JSONArray data) {
+//        System.err.println("POSTING json array: \n"+data.toString());
+        WebTarget webTarget = client.target(url.toString());
+        if (params != null) {
+            for (String s : params.keySet()) {
+                webTarget = webTarget.queryParam(s, params.get(s));
+            }
+        }
+        Invocation.Builder invocationBuilder =
+                webTarget.request(MediaType.APPLICATION_JSON);
+        Entity entity = Entity.entity(data, MediaType.APPLICATION_JSON_TYPE);
+
+        Response response = invocationBuilder.post(Entity.json(data.toString()));
         return response;
     }
 
     public Response doPut(Map<String, String> params, Object data) {
-//        Client client = ClientBuilder.newClient(new ClientConfig()
-////                .register(MyClientResponseFilter.class)
-////                .register(new AnotherClientFilter()
-//        );
-
         WebTarget webTarget = client.target(url.toString());
         if (params != null) {
             for (String s : params.keySet()) {
                 webTarget = webTarget.queryParam(s, params.get(s));
             }
         }
-
-//        System.out.println("REST-Aufruf Middleware:");
-//        System.out.println("  POST   " + webTarget.getUri().toString() + " ...");
-
         Invocation.Builder invocationBuilder =
                 webTarget.request(MediaType.APPLICATION_JSON);
-//        invocationBuilder.header("some-header", "true");
-
         Entity entity = Entity.entity(data, MediaType.APPLICATION_JSON_TYPE);
 
         Response response
                 = invocationBuilder
                 .put(entity);
-
-//        System.out.println("  > Status: " + response.getStatus() + " - " + response.getStatusInfo().getReasonPhrase());
-//        for (String s : response.getStringHeaders().keySet()) {
-//            System.out.println("  > Header: " + s + " - " + response.getStringHeaders().get(s));
-//        }
-//        System.out.println("  > Data:   " + response.readEntity(String.class));
         return response;
     }
 
-    public Response doDelete(Map<String, String> params) {
-//        Client client = ClientBuilder.newClient(new ClientConfig()
-////                .register(MyClientResponseFilter.class)
-////                .register(new AnotherClientFilter()
-//        );
 
+
+    public Response doPutJsonObject(Map<String, String> params, JSONObject data) {
+//        System.err.println("PUTING json object: \n"+data.toString());
         WebTarget webTarget = client.target(url.toString());
         if (params != null) {
             for (String s : params.keySet()) {
                 webTarget = webTarget.queryParam(s, params.get(s));
             }
         }
-
-//        System.out.println("  DELETE " + webTarget.getUri().toString() + " ...");
-
         Invocation.Builder invocationBuilder =
                 webTarget.request(MediaType.APPLICATION_JSON);
-//        invocationBuilder.header("some-header", "true");
+        Entity entity = Entity.entity(data, MediaType.APPLICATION_JSON_TYPE);
 
+        Response response = invocationBuilder.post(Entity.json(data.toString()));
+        return response;
+    }
+    public Response doPutMap(Map<String, String> params, Map<String, Object> data) {
+        return doPutJsonObject(params, new JSONObject(data));
+    }
+
+    public Response doPutJsonObject(Map<String, String> params, JSONArray data) {
+//        System.err.println("PUTING json array: \n"+data.toString());
+        WebTarget webTarget = client.target(url.toString());
+        if (params != null) {
+            for (String s : params.keySet()) {
+                webTarget = webTarget.queryParam(s, params.get(s));
+            }
+        }
+        Invocation.Builder invocationBuilder =
+                webTarget.request(MediaType.APPLICATION_JSON);
+        Entity entity = Entity.entity(data, MediaType.APPLICATION_JSON_TYPE);
+
+        Response response = invocationBuilder.post(Entity.json(data.toString()));
+        return response;
+    }
+
+
+
+    public Response doDelete(Map<String, String> params) {
+        WebTarget webTarget = client.target(url.toString());
+        if (params != null) {
+            for (String s : params.keySet()) {
+                webTarget = webTarget.queryParam(s, params.get(s));
+            }
+        }
+        Invocation.Builder invocationBuilder =
+                webTarget.request(MediaType.APPLICATION_JSON);
         Response response = invocationBuilder.delete();
-
-//        System.out.println("  > Status: " + response.getStatus() + " - " + response.getStatusInfo().getReasonPhrase());
-//        for (String s : response.getStringHeaders().keySet()) {
-//            System.out.println("  > Header: " + s + " - " + response.getStringHeaders().get(s));
-//        }
-//        System.out.println("  > Data:   " + response.readEntity(String.class));
         return response;
     }
 

@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.ws.rs.ProcessingException;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -17,10 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 
 public class JsonInjectorModel {
 
@@ -80,7 +78,7 @@ public class JsonInjectorModel {
         dataInputClient = new RestClient(containerUrl, "data");
         statusChecker = new StatusChecker(containerUrl);
         statusCheckerThread = new Thread(statusChecker);
-        statusCheckerThread.start();
+        //statusCheckerThread.start();
 
         this.containerUrl = containerUrl;
         log("Container Connection OK");
@@ -123,6 +121,8 @@ public class JsonInjectorModel {
 
   void log(String s){
     pw.println(String.format("[%s] ",logDateFormat.format(ZonedDateTime.now())) + s);
+    System.out.println(String.format("[%s] ",logDateFormat.format(ZonedDateTime.now())) + s);
+    pw.flush();
   }
 
   public void setDataList(List<Object> objects) {
@@ -159,13 +159,16 @@ public class JsonInjectorModel {
     nextBatch = new BatchDataInjector(this.dataInputClient, nextBatchData, this);
     nextObject += nextBatchSize;
 
-    log("Next batch prepared, size: " + nextBatch);
+    log("Next batch prepared, size: " + nextBatch.size());
   }
 
 
   void startInjection(){
     runs.setValue(true);
+    prepareNextBatch();
     while(runs.getValue() && nextBatch != null){
+      log("Data injection ongoing...");
+
       currentBatch = nextBatch;
       nextBatch = null;
 
@@ -173,18 +176,44 @@ public class JsonInjectorModel {
 
 
 
+
       try {
+
+        HashMap<?,?> ob;
+        JSONObject jo;
+        RestClient testClient = new RestClient("http://localhost:8080/middleware-api","status");
+        log(testClient.doGet(null).readEntity(String.class));
+        ob = (HashMap) dataList.get(0);
+        jo = new JSONObject(ob);
+        //jo = new JSONObject();
+
+        log("testing JSON Object posting...");
+        Response r = testClient.doPostJsonObject(null, new JSONArray(dataList.subList(0,5)));
+        r.getHeaders().forEach( (x, k) -> log(" -- " + x + ": " + k));
+        log(r.readEntity(String.class));
+
+
+
+        dataInputClient.doPost(null, jo);
+        log("DEBUG Single thing posted...");
+
         currentBatch.startInject();
       } catch (IllegalAccessException | InterruptedException e) {
         e.printStackTrace();
         runs.setValue(false);
         return;
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
       }
 
-      lastBatch = currentBatch;
-      currentBatch = null;
+      // stop after 1 try for now
+      log("ABORT AFTER FIRST INJECTION!");
+      return;
 
-      prepareNextBatch();
+//      lastBatch = currentBatch;
+//      currentBatch = null;
+//
+//      prepareNextBatch();
     }
 
   }

@@ -1,5 +1,7 @@
 package at.franzreischl.dke.jsoninjector;
 
+import org.json.JSONArray;
+
 import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -10,6 +12,11 @@ public class BatchDataInjector {
   private static int batchIndexCounter = 0;
 
   private RestClient rc;
+
+  public int getBatchIndex() {
+    return batchIndex;
+  }
+
   private int batchIndex;
   private List<Object> batchData;
   private int index = 0;
@@ -35,7 +42,7 @@ public class BatchDataInjector {
     if(done) return;
     caller.log("Batch " + batchIndex + ": Injecting " + batchData.size() + " objects into container...");
     startTime = Instant.now();
-    Response r = rc.doPost(null, batchData);
+    Response r = rc.doPostJsonObject(null, new JSONArray(batchData));
     if(r.getStatus() != 200){
       throw new IllegalAccessException(r.getStatusInfo().toString());
     }
@@ -50,9 +57,6 @@ public class BatchDataInjector {
     done = true;
   }
 
-  int size(){
-    return batchData.size();
-  }
 
   double getOpm(){
     if(!done) return -1.0;
@@ -60,18 +64,20 @@ public class BatchDataInjector {
   }
 
   long getLoadDurationMillis(){
-    if(!done) return -1;
-    else return endLoadTime.toEpochMilli() - startTime.toEpochMilli();
+    return endLoadTime.toEpochMilli() - startTime.toEpochMilli();
   }
 
   long getBatchDurationMillis(){
-    if(!done) return -1;
-    else return doneTime.toEpochMilli() - startTime.toEpochMilli();
+    return doneTime.toEpochMilli() - startTime.toEpochMilli();
   }
 
   long getProcessingDurationMillis(){
-    if(!done) return -1;
-    else return doneTime.toEpochMilli() - endLoadTime.toEpochMilli();
+    return doneTime.toEpochMilli() - endLoadTime.toEpochMilli();
+  }
+
+  int size(){
+    if(batchData == null) return -1;
+    return batchData.size();
   }
 
 
