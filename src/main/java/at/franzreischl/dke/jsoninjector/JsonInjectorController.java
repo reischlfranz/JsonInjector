@@ -191,12 +191,6 @@ public class JsonInjectorController {
     // set initial model values
     model.setTargetMinutesPerBatch( nextBatchTargetField.getValue());
 
-    // DEBUG TODO remove these lines
-    try {
-      openJsonFile(Paths.get("C:\\Users\\Franzi\\OneDrive\\IT-Projekt Wirtschaftsinformatik\\WP2\\seismic.json").toFile());
-      this.setContainerUrl("http://localhost:4000/api");
-    } catch (IOException e) {       e.printStackTrace();     }
-    // DEBUG END
   }
 
   @FXML
