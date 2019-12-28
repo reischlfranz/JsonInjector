@@ -60,11 +60,6 @@
 </dependency>
   <dependency>
     <groupId>org.openjfx</groupId>
-    <artifactId>javafx-base</artifactId>
-    <version>14-ea+4</version>
-  </dependency>
-  <dependency>
-    <groupId>org.openjfx</groupId>
     <artifactId>javafx-fxml</artifactId>
     <version>14-ea+4</version>
   </dependency>

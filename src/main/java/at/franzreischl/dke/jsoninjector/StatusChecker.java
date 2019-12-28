@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class StatusChecker implements Runnable {
+  private boolean isRunning = false;
 
   public enum Status{
     OFFLINE,
@@ -53,9 +54,16 @@ public class StatusChecker implements Runnable {
 
   public boolean isOk(){ return status == Status.OK;}
 
+  public void stop(){
+    isRunning = false;
+  }
+
+
+
   @Override
   public void run() {
-    while(true) {
+    isRunning = true;
+    while(isRunning) {
       try {
 
         Thread.sleep(10000);

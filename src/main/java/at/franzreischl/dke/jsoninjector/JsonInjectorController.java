@@ -78,6 +78,9 @@ public class JsonInjectorController {
   private ProgressIndicator batchLoadingProgr;
 
   @FXML
+  private Label curBatchIndexLbl;
+
+  @FXML
   private ProgressBar progrBarTotal;
 
   @FXML
@@ -102,16 +105,16 @@ public class JsonInjectorController {
   private Label nextBatchObjCntLabel;
 
   @FXML
-  private Label nextBatchIndexLabel;
+  private Label nextBatchIndexLbl;
 
   @FXML
   private TextField restUrlField;
+
 
   // Properties for View Controller
   // Remaining Objects pane
   SimpleLongProperty remainingObjectsProperty = new SimpleLongProperty(0);
   SimpleLongProperty totalObjectsProperty = new SimpleLongProperty(0);
-  SimpleLongProperty currentBatchIndexProperty = new SimpleLongProperty(0);
 
   // Next batch pane
   SimpleLongProperty nextBatchIndexProperty = new SimpleLongProperty(-1);
@@ -120,6 +123,7 @@ public class JsonInjectorController {
   // Current batch pane
   SimpleLongProperty currentBatchSizeProperty = new SimpleLongProperty(0);
   SimpleLongProperty currentBatchRemainProperty = new SimpleLongProperty(0);
+  SimpleLongProperty currentBatchIndexProperty = new SimpleLongProperty(-1);
   SimpleDoubleProperty currentBatchProcessingProgressProperty = new SimpleDoubleProperty(0.25);
   SimpleDoubleProperty currentBatchLoadingProgressProperty = new SimpleDoubleProperty(0.25);
   SimpleBooleanProperty currentBatchIsLoadingProperty = new SimpleBooleanProperty(false);
@@ -148,12 +152,6 @@ public class JsonInjectorController {
                 x.getStyleClass().add("isHidden");
            });
     batchProcessingWaitPane.getStyleClass().add("isHidden");
-
-    // Change target minutes...?
-    nextBatchTargetField.valueProperty().addListener((obs,oldVal,newVal)->{
-      InjectorHelper.getInstance().prepareNextBatch();
-    });
-
   }
 
   public JsonInjectorModel getModel() {
@@ -170,12 +168,13 @@ public class JsonInjectorController {
 
     // Next batch
     nextBatchObjCntLabel.textProperty()         .bind(nextBatchSizeProperty.asString());
-    nextBatchIndexLabel.textProperty()          .bind(nextBatchIndexProperty.asString());
+    nextBatchIndexLbl.textProperty()            .bind(nextBatchIndexProperty.asString());
 
     // Current Batch
     totalLblBatch.textProperty()                .bind(currentBatchSizeProperty.asString() );
     batchProcessingWaitPane.visibleProperty()   .bind(currentBatchIsProcessingProperty);
     batchLoadingWaitPane.visibleProperty()      .bind(currentBatchIsLoadingProperty);
+    curBatchIndexLbl.textProperty()             .bind(currentBatchIndexProperty.asString());
 
     batchLoadingProgr.progressProperty()        .bind(currentBatchLoadingProgressProperty);
     batchProcessingProgr.progressProperty()     .bind(currentBatchProcessingProgressProperty);
@@ -188,19 +187,6 @@ public class JsonInjectorController {
     totalOPMLbl.textProperty()                  .bind(opmTotalProperty.asString("%.2f"));
     avgBatchSizeLbl.textProperty()              .bind(avgBatchSizeProperty.asString("%.2f"));
 
-
-//    model.currentBatchIsProcessing.bind(batchProcessingWaitPane.visibleProperty());
-//    model.currentBatchIsLoading.bind(batchLoadingWaitPane.visibleProperty());
-
-//    lastBatchOPMLbl.textProperty()      .bind(y.asString() );
-//    totalOPMLbl.textProperty()          .bind(y.asString() );
-//    objectsDoneLblTotal.textProperty()  .bind(y.asString() );
-
-
-    // Current Batch
-
-//    curBatchTimeLbl.textProperty()      .bindy.asString() );
-//    curBatchOPMLbl.textProperty()       .bindy.asString() );
 
     // set initial model values
     model.setTargetMinutesPerBatch( nextBatchTargetField.getValue());
@@ -236,8 +222,6 @@ public class JsonInjectorController {
     String s = br.lines().reduce(String::concat).orElse("[]");
     //  System.out.println(s);
     fileNameLabel.setText(jsonFile.getAbsolutePath());
-    JSONArray ja = new JSONArray(s);
-    List l = ja.toList();
     model.setDataList(new JSONArray(s).toList());
 
     this.chkJsonFile.setSelected(true);
@@ -281,20 +265,11 @@ public class JsonInjectorController {
 
   @FXML
   private void startInjection(){
-
-
-//    model.currentBatchIsLoading.setValue(!model.currentBatchIsLoading.getValue());
-//    model.currentBatchIsProcessing.setValue(!model.currentBatchIsProcessing.getValue());
     startBtn.setDisable(true);
     model.log("Start button pressed!");
     model.startInjection();
   }
 
-
-//  // Property Setters
-//  public void setPropNextBatchSize(long val){
-//    nextBatchSizeProperty.set(val);
-//  }
 
 
 }
