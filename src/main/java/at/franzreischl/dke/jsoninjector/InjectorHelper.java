@@ -110,9 +110,9 @@ public class InjectorHelper implements Runnable {
                               +  model.targetMinutesPerBatch * lastBatch.getOpm());
     }
 
-
-    if(nextObject + nextBatchSize >= model.dataList.size()){
-      nextBatchSize = model.dataList.size() - nextObject - 1;
+    // check if this is the last batch - no more objects remaining after that
+    if(nextObject + nextBatchSize > model.dataList.size() -1 ){
+      nextBatchSize = model.dataList.size() - nextObject;
       isLastBatch = true;
     }
 
