@@ -111,7 +111,7 @@ public class BatchDataInjector {
     return doneTime.toEpochMilli() - endLoadTime.toEpochMilli();
   }
 
-  int size(){
+  long size(){
     if(batchData == null) return -1;
     return batchData.size();
   }

@@ -93,6 +93,9 @@ public class JsonInjectorController {
   private Label objectsLblTotal;
 
   @FXML
+  private Label avgBatchSizeLbl;
+
+  @FXML
   private Spinner<Integer> nextBatchTargetField;
 
   @FXML
@@ -121,6 +124,14 @@ public class JsonInjectorController {
   SimpleDoubleProperty currentBatchLoadingProgressProperty = new SimpleDoubleProperty(0.25);
   SimpleBooleanProperty currentBatchIsLoadingProperty = new SimpleBooleanProperty(false);
   SimpleBooleanProperty currentBatchIsProcessingProperty = new SimpleBooleanProperty(false);
+
+  // Objects done pane
+  SimpleDoubleProperty opmLastBatchProperty = new SimpleDoubleProperty(0.0);
+  SimpleDoubleProperty opmTotalProperty = new SimpleDoubleProperty(0.0);
+  SimpleDoubleProperty totalProgressProperty = new SimpleDoubleProperty(-1.0);
+  SimpleLongProperty totalObjectsDoneProperty = new SimpleLongProperty(0);
+  SimpleDoubleProperty avgBatchSizeProperty = new SimpleDoubleProperty(0.0);
+
 
 
   public JsonInjectorController() {
@@ -154,19 +165,29 @@ public class JsonInjectorController {
     model.setController(this);
     // Bind value properties for UI
     // Objects remaining
-    remainLblTotal.textProperty()       .bind(remainingObjectsProperty.asString() );
-    remainLblBatch.textProperty()       .bind(currentBatchRemainProperty.asString() );
+    remainLblTotal.textProperty()               .bind(remainingObjectsProperty.asString() );
+    remainLblBatch.textProperty()               .bind(currentBatchRemainProperty.asString() );
 
     // Next batch
-    nextBatchObjCntLabel.textProperty() .bind(nextBatchSizeProperty.asString());
-    nextBatchIndexLabel.textProperty()  .bind(nextBatchIndexProperty.asString());
+    nextBatchObjCntLabel.textProperty()         .bind(nextBatchSizeProperty.asString());
+    nextBatchIndexLabel.textProperty()          .bind(nextBatchIndexProperty.asString());
 
     // Current Batch
-    batchProcessingWaitPane.visibleProperty().bind(currentBatchIsProcessingProperty);
-    batchLoadingWaitPane.visibleProperty().bind(currentBatchIsLoadingProperty);
+    totalLblBatch.textProperty()                .bind(currentBatchSizeProperty.asString() );
+    batchProcessingWaitPane.visibleProperty()   .bind(currentBatchIsProcessingProperty);
+    batchLoadingWaitPane.visibleProperty()      .bind(currentBatchIsLoadingProperty);
 
-    batchLoadingProgr.progressProperty().bind(currentBatchLoadingProgressProperty);
-    batchProcessingProgr.progressProperty().bind(currentBatchProcessingProgressProperty);
+    batchLoadingProgr.progressProperty()        .bind(currentBatchLoadingProgressProperty);
+    batchProcessingProgr.progressProperty()     .bind(currentBatchProcessingProgressProperty);
+
+    // Objects done
+    objectsLblTotal.textProperty()              .bind(totalObjectsProperty.asString() );
+    objectsDoneLblTotal.textProperty()          .bind(totalObjectsDoneProperty.asString());
+    progrBarTotal.progressProperty()            .bind(totalProgressProperty);
+    lastBatchOPMLbl.textProperty()              .bind(opmLastBatchProperty.asString("%.2f"));
+    totalOPMLbl.textProperty()                  .bind(opmTotalProperty.asString("%.2f"));
+    avgBatchSizeLbl.textProperty()              .bind(avgBatchSizeProperty.asString("%.2f"));
+
 
 //    model.currentBatchIsProcessing.bind(batchProcessingWaitPane.visibleProperty());
 //    model.currentBatchIsLoading.bind(batchLoadingWaitPane.visibleProperty());
@@ -174,8 +195,6 @@ public class JsonInjectorController {
 //    lastBatchOPMLbl.textProperty()      .bind(y.asString() );
 //    totalOPMLbl.textProperty()          .bind(y.asString() );
 //    objectsDoneLblTotal.textProperty()  .bind(y.asString() );
-    objectsLblTotal.textProperty()      .bind(totalObjectsProperty.asString() );
-    totalLblBatch.textProperty()        .bind(currentBatchSizeProperty.asString() );
 
 
     // Current Batch

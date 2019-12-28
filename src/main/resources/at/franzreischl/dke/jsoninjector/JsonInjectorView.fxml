@@ -34,34 +34,36 @@
                </tooltip></Button>
             <Label layoutX="14.0" layoutY="101.0" text="Time elapsed:" />
             <Label layoutX="14.0" layoutY="127.0" text="Estimated completion time:" />
-            <Label layoutX="201.0" layoutY="101.0" text="Label" />
+            <Label layoutX="201.0" layoutY="101.0" text="NAN" />
             <Label layoutX="200.0" layoutY="127.0" text="NAN" />
          </children>
       </Pane>
       <Pane layoutX="14.0" layoutY="247.0" prefHeight="255.0" prefWidth="1044.0" style="-fx-background-color: #cccccc;" styleClass="mainContentPane">
          <children>
-            <Label layoutX="22.0" layoutY="41.0" prefHeight="17.0" prefWidth="186.0" text="Injecting data into container:" />
+            <Label layoutX="22.0" layoutY="41.0" prefHeight="17.0" prefWidth="219.0" text="Injecting JSON objects into container:" />
             <Label layoutX="10.0" layoutY="10.0" styleClass="sectionHeader" text="Current Batch" />
-            <ProgressBar fx:id="progrBarBatch" layoutX="22.0" layoutY="59.0" prefHeight="18.0" prefWidth="1000.0" />
-            <Label fx:id="totalLblBatch" alignment="CENTER_RIGHT" layoutX="950.0" layoutY="41.0" prefHeight="17.0" prefWidth="72.0" text="y.yyy.yyy" />
-            <Label layoutX="708.0" layoutY="93.0" text="Current batch time:" />
-            <Label layoutX="708.0" layoutY="120.0" text="Est. objects per minute:" />
-            <Label fx:id="curBatchTimeLbl" layoutX="863.0" layoutY="93.0" text="Label" />
-            <Label fx:id="curBatchOPMLbl" layoutX="863.0" layoutY="120.0" text="Label" />
-            <Pane fx:id="batchProcessingWaitPane" layoutX="193.0" layoutY="94.0" prefHeight="87.0" prefWidth="114.0">
+            <ProgressBar fx:id="progrBarBatch" layoutX="22.0" layoutY="59.0" prefHeight="18.0" prefWidth="1000.0" visible="false" />
+            <Label fx:id="totalLblBatch" alignment="CENTER_RIGHT" layoutX="241.0" layoutY="41.0" prefHeight="17.0" prefWidth="72.0" text="y.yyy.yyy" />
+            <Label layoutX="41.0" layoutY="148.0" text="Current batch time:" />
+            <Label layoutX="321.0" layoutY="148.0" text="Est. objects per minute:" />
+            <Label fx:id="curBatchTimeLbl" layoutX="196.0" layoutY="148.0" text="NAN" />
+            <Label fx:id="curBatchOPMLbl" layoutX="476.0" layoutY="148.0" text="NAN" />
+            <Pane fx:id="batchProcessingWaitPane" layoutX="514.0" layoutY="34.0" prefHeight="87.0" prefWidth="114.0">
                <children>
                   <Label style="-fx-text-fill: red;" text="Processing data..." />
                   <ProgressIndicator fx:id="batchProcessingProgr" layoutX="6.0" layoutY="20.0" />
                </children>
             </Pane>
-            <Label fx:id="remainLblBatch" alignment="CENTER_RIGHT" layoutX="785.0" layoutY="41.0" prefHeight="17.0" prefWidth="145.0" text="x.xxx.xxx" />
-            <Label layoutX="936.0" layoutY="41.0" text="/" />
-            <Pane fx:id="batchLoadingWaitPane" layoutX="67.0" layoutY="94.0" prefHeight="87.0" prefWidth="114.0">
+            <Label fx:id="remainLblBatch" alignment="CENTER_RIGHT" layoutX="785.0" layoutY="41.0" prefHeight="17.0" prefWidth="145.0" text="x.xxx.xxx" visible="false" />
+            <Label layoutX="936.0" layoutY="41.0" text="/" visible="false" />
+            <Pane fx:id="batchLoadingWaitPane" layoutX="388.0" layoutY="34.0" prefHeight="87.0" prefWidth="114.0">
                <children>
                   <Label style="-fx-text-fill: red;" text="Loading data..." />
                   <ProgressIndicator fx:id="batchLoadingProgr" layoutX="6.0" layoutY="20.0" />
                </children>
             </Pane>
+            <Label layoutX="22.0" layoutY="69.0" text="Batch #:" />
+            <Label fx:id="curBatchIndexLbl" layoutX="263.0" layoutY="69.0" text="xxx" />
          </children>
       </Pane>
       <Pane layoutX="14.0" layoutY="516.0" prefHeight="116.0" prefWidth="1044.0" style="-fx-background-color: #cccccc;" styleClass="mainContentPane">
@@ -75,6 +77,8 @@
             <Label fx:id="objectsDoneLblTotal" alignment="CENTER_RIGHT" layoutX="844.0" layoutY="28.0" prefHeight="17.0" prefWidth="89.0" text="x.xxx.xxx" />
             <Label fx:id="objectsLblTotal" alignment="CENTER_RIGHT" layoutX="952.0" layoutY="28.0" prefHeight="17.0" prefWidth="70.0" text="y.yyy.yyy" />
             <Label layoutX="939.0" layoutY="28.0" text="/" />
+            <Label layoutX="646.0" layoutY="85.0" text="Objects per batch (average):" />
+            <Label fx:id="avgBatchSizeLbl" layoutX="808.0" layoutY="85.0" text="Label" />
          </children>
       </Pane>
       <Pane layoutX="424.0" layoutY="79.0" prefHeight="158.0" prefWidth="633.0" style="-fx-background-color: #cccccc;" styleClass="mainContentPane">
@@ -90,7 +94,7 @@
             </Spinner>
             <Label fx:id="nextBatchObjCntLabel" layoutX="151.0" layoutY="79.0" text="xxx" />
             <Label layoutX="14.0" layoutY="105.0" text="Next batch #:" />
-            <Label fx:id="nextBatchIndexLabel" layoutX="151.0" layoutY="105.0" text="xxx" />
+            <Label fx:id="nextBatchIndexLbl" layoutX="151.0" layoutY="105.0" text="xxx" />
          </children>
       </Pane>
       <TextField fx:id="restUrlField" layoutX="257.0" layoutY="14.0" prefHeight="25.0" prefWidth="801.0" />

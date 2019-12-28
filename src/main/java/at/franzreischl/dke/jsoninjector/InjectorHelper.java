@@ -42,7 +42,7 @@ public class InjectorHelper implements Runnable {
       currentBatch = nextBatch;
       nextBatch = null;
 
-      // bind properties for current batch
+
       prepareNextBatch();
 
       if(currentBatch == null && nextBatch != null) continue;
@@ -50,11 +50,13 @@ public class InjectorHelper implements Runnable {
         isRunning = false;
         break;
       }
+
+
+
       Platform.runLater(()->model.getController().currentBatchIndexProperty.set(currentBatch.getBatchIndex()));
       Platform.runLater(()->model.getController().currentBatchSizeProperty.set(currentBatch.size()));
       Platform.runLater(()->model.getController().currentBatchIsLoadingProperty.set(true));
       Platform.runLater(()->model.getController().currentBatchIsProcessingProperty.set(false));
-
 
       try {
         currentBatch.startInject();
@@ -65,11 +67,25 @@ public class InjectorHelper implements Runnable {
         isRunning = false;
         return;
       }
+      model.batches.add(currentBatch);
+
+      // bind properties for current batch
       Platform.runLater(()->model.getController().currentBatchIsLoadingProperty.set(true));
       Platform.runLater(()->model.getController().currentBatchIsProcessingProperty.set(true));
 
+      Platform.runLater(()->model.getController().opmLastBatchProperty.set(model.getLastBatchOpm()));
+      Platform.runLater(()->model.getController().opmTotalProperty.set(model.getTotalOpm()));
       Platform.runLater(()->model.getController().remainingObjectsProperty.set(
-              (nextObject<0)?0:model.dataList.size() - nextObject-1));
+              model.dataList.size() - model.getDoneObjects()));
+      Platform.runLater(()->model.getController().totalObjectsDoneProperty.set(model.getDoneObjects()));
+      Platform.runLater(()->model.getController().avgBatchSizeProperty.set(model.getAvgBatchSize()));
+
+
+      double progress;
+      if(model.dataList.size() == 0) progress = -1.0;
+      else progress = (double) (model.getDoneObjects()) / model.dataList.size();
+      model.log("Progress: "+progress);
+      Platform.runLater(()->model.getController().totalProgressProperty.set(progress));
 
 
       lastBatch = currentBatch;

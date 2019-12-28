@@ -57,6 +57,7 @@ public class JsonInjectorModel {
    * @throws IOException
    */
   public JsonInjectorModel() throws IOException {
+    batches = new ArrayList<>();
     fileDateFormat = DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
     logDateFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss.nn").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
     //System.out.println(fileDateFormat.format(ZonedDateTime.now()));
@@ -148,6 +149,28 @@ public class JsonInjectorModel {
   public void setPropNextBatchSize(long val){
 //    controller.nextBatchSizeProperty.set(val);
     testProp.set(val);
+  }
+
+  public long getDoneObjects(){
+    return batches.stream().map(x -> x.size()).reduce(0L,(x,y)->x+y);
+  }
+  public long getDoneDurationMillis(){
+    return batches.stream().map(x -> x.getBatchDurationMillis()).reduce(0L,(x,y)->x+y);
+  }
+
+  public double getTotalOpm(){
+    if(batches.isEmpty()) return -1.0;
+    return getDoneObjects() / ((double) getDoneDurationMillis() / 1000 / 60);
+  }
+
+  public double getLastBatchOpm(){
+    if(batches.isEmpty()) return -1.0;
+    return batches.get(batches.size()-1).getOpm();
+  }
+
+  public double getAvgBatchSize(){
+    if(batches.isEmpty()) return 0.0;
+    return (double) getDoneObjects() / batches.size();
   }
 
 
