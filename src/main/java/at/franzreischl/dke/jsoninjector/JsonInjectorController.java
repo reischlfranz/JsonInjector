@@ -1,5 +1,9 @@
 package at.franzreischl.dke.jsoninjector;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,7 +17,6 @@ import org.json.JSONArray;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 public class JsonInjectorController {
@@ -42,6 +45,12 @@ public class JsonInjectorController {
   private Label remainLblTotal;
 
   @FXML
+  private Button startBtn;
+
+  @FXML
+  private Button pauseBtn;
+
+  @FXML
   private ProgressBar progrBarBatch;
 
   @FXML
@@ -57,7 +66,16 @@ public class JsonInjectorController {
   private Pane batchProcessingWaitPane;
 
   @FXML
+  private ProgressIndicator batchProcessingProgr;
+
+  @FXML
   private Label remainLblBatch;
+
+  @FXML
+  private Pane batchLoadingWaitPane;
+
+  @FXML
+  private ProgressIndicator batchLoadingProgr;
 
   @FXML
   private ProgressBar progrBarTotal;
@@ -81,7 +99,29 @@ public class JsonInjectorController {
   private Label nextBatchObjCntLabel;
 
   @FXML
+  private Label nextBatchIndexLabel;
+
+  @FXML
   private TextField restUrlField;
+
+  // Properties for View Controller
+  // Remaining Objects pane
+  SimpleLongProperty remainingObjectsProperty = new SimpleLongProperty(0);
+  SimpleLongProperty totalObjectsProperty = new SimpleLongProperty(0);
+  SimpleLongProperty currentBatchIndexProperty = new SimpleLongProperty(0);
+
+  // Next batch pane
+  SimpleLongProperty nextBatchIndexProperty = new SimpleLongProperty(-1);
+  SimpleLongProperty nextBatchSizeProperty = new SimpleLongProperty(0);
+
+  // Current batch pane
+  SimpleLongProperty currentBatchSizeProperty = new SimpleLongProperty(0);
+  SimpleLongProperty currentBatchRemainProperty = new SimpleLongProperty(0);
+  SimpleDoubleProperty currentBatchProcessingProgressProperty = new SimpleDoubleProperty(0.25);
+  SimpleDoubleProperty currentBatchLoadingProgressProperty = new SimpleDoubleProperty(0.25);
+  SimpleBooleanProperty currentBatchIsLoadingProperty = new SimpleBooleanProperty(false);
+  SimpleBooleanProperty currentBatchIsProcessingProperty = new SimpleBooleanProperty(false);
+
 
   public JsonInjectorController() {
   }
@@ -98,11 +138,9 @@ public class JsonInjectorController {
            });
     batchProcessingWaitPane.getStyleClass().add("isHidden");
 
-    // Set the spinner field limits for batch time target.
-    nextBatchTargetField.setValueFactory(
-            new SpinnerValueFactory.IntegerSpinnerValueFactory(1,9999,1));
+    // Change target minutes...?
     nextBatchTargetField.valueProperty().addListener((obs,oldVal,newVal)->{
-            model.prepareNextBatch();
+      InjectorHelper.getInstance().prepareNextBatch();
     });
 
   }
@@ -113,27 +151,40 @@ public class JsonInjectorController {
 
   public void setModel(JsonInjectorModel model) {
     this.model = model;
+    model.setController(this);
     // Bind value properties for UI
     // Objects remaining
-    remainLblTotal.textProperty()       .bind(model.remainingObjectsProperty.asString() );
-    remainLblBatch.textProperty()       .bind(model.currentBatchRemainProperty.asString() );
+    remainLblTotal.textProperty()       .bind(remainingObjectsProperty.asString() );
+    remainLblBatch.textProperty()       .bind(currentBatchRemainProperty.asString() );
 
     // Next batch
-//    lastBatchOPMLbl.textProperty()      .bind(model.y.asString() );
-//    totalOPMLbl.textProperty()          .bind(model.y.asString() );
-//    objectsDoneLblTotal.textProperty()  .bind(model.y.asString() );
-    objectsLblTotal.textProperty()      .bind(model.totalObjectsProperty.asString() );
-    nextBatchObjCntLabel.textProperty() .bind(model.nextBatchSizeProperty.asString() );
-    totalLblBatch.textProperty()        .bind(model.currentBatchSizeProperty.asString() );
+    nextBatchObjCntLabel.textProperty() .bind(nextBatchSizeProperty.asString());
+    nextBatchIndexLabel.textProperty()  .bind(nextBatchIndexProperty.asString());
+
+    // Current Batch
+    batchProcessingWaitPane.visibleProperty().bind(currentBatchIsProcessingProperty);
+    batchLoadingWaitPane.visibleProperty().bind(currentBatchIsLoadingProperty);
+
+    batchLoadingProgr.progressProperty().bind(currentBatchLoadingProgressProperty);
+    batchProcessingProgr.progressProperty().bind(currentBatchProcessingProgressProperty);
+
+//    model.currentBatchIsProcessing.bind(batchProcessingWaitPane.visibleProperty());
+//    model.currentBatchIsLoading.bind(batchLoadingWaitPane.visibleProperty());
+
+//    lastBatchOPMLbl.textProperty()      .bind(y.asString() );
+//    totalOPMLbl.textProperty()          .bind(y.asString() );
+//    objectsDoneLblTotal.textProperty()  .bind(y.asString() );
+    objectsLblTotal.textProperty()      .bind(totalObjectsProperty.asString() );
+    totalLblBatch.textProperty()        .bind(currentBatchSizeProperty.asString() );
 
 
     // Current Batch
-    progrBarBatch.progressProperty()    .bind(model.currentBatchProgress);
-//    curBatchTimeLbl.textProperty()      .bind(model.y.asString() );
-//    curBatchOPMLbl.textProperty()       .bind(model.y.asString() );
+
+//    curBatchTimeLbl.textProperty()      .bindy.asString() );
+//    curBatchOPMLbl.textProperty()       .bindy.asString() );
 
     // set initial model values
-    model.setTargetMinutesPerBatch(nextBatchTargetField.getValue());
+    model.setTargetMinutesPerBatch( nextBatchTargetField.getValue());
 
     // DEBUG TODO remove these lines
     try {
@@ -211,8 +262,20 @@ public class JsonInjectorController {
 
   @FXML
   private void startInjection(){
+
+
+//    model.currentBatchIsLoading.setValue(!model.currentBatchIsLoading.getValue());
+//    model.currentBatchIsProcessing.setValue(!model.currentBatchIsProcessing.getValue());
+    startBtn.setDisable(true);
     model.log("Start button pressed!");
     model.startInjection();
   }
+
+
+//  // Property Setters
+//  public void setPropNextBatchSize(long val){
+//    nextBatchSizeProperty.set(val);
+//  }
+
 
 }

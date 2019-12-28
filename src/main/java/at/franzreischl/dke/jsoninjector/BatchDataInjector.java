@@ -1,12 +1,11 @@
 package at.franzreischl.dke.jsoninjector;
 
+import javafx.application.Platform;
 import org.json.JSONArray;
 
 import javax.ws.rs.core.Response;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Timer;
 
 public class BatchDataInjector {
   static int batchIndexCounter = 0;
@@ -24,13 +23,13 @@ public class BatchDataInjector {
   private Instant endLoadTime;
   private Instant doneTime;
   private boolean done=false;
-  private JsonInjectorModel caller;
+  private JsonInjectorModel model;
 
-  public BatchDataInjector(RestClient rc, List<Object> batchData, JsonInjectorModel caller){
-    if(batchData == null || rc == null || caller == null) throw new IllegalArgumentException();
+  public BatchDataInjector(RestClient rc, List<Object> batchData, JsonInjectorModel model){
+    if(batchData == null || rc == null || model == null) throw new IllegalArgumentException();
     this.rc = rc;
     this.batchData = batchData;
-    this.caller = caller;
+    this.model = model;
     batchIndex = batchIndexCounter++;
   }
 
@@ -40,23 +39,53 @@ public class BatchDataInjector {
 
   public void startInject() throws IllegalAccessException, InterruptedException {
     if(done) return;
-    caller.log("Batch " + batchIndex + ": Injecting " + batchData.size() + " objects into container...");
+
+    Platform.runLater(()-> model.getController().currentBatchIsLoadingProperty.set(true));
+    Platform.runLater(()-> model.getController().currentBatchIsProcessingProperty.set(false));
+    Platform.runLater(()-> model.getController().currentBatchProcessingProgressProperty.set(-1.0));
+    Platform.runLater(()-> model.getController().currentBatchLoadingProgressProperty.set(-1.0));
+
+
+    model.log("Batch " + batchIndex + ": Injecting " + batchData.size() + " objects into container...");
     startTime = Instant.now();
     Response r = rc.doPostJsonObject(null, new JSONArray(batchData));
     if(r.getStatus() != 200){
       throw new IllegalAccessException(r.getStatusInfo().toString());
     }
     endLoadTime = Instant.now();
+    Platform.runLater(()-> model.getController().currentBatchIsLoadingProperty.set(true));
+    Platform.runLater(()-> model.getController().currentBatchIsProcessingProperty.set(true));
+    Platform.runLater(()-> model.getController().currentBatchLoadingProgressProperty.set(1.0));
+    Platform.runLater(()-> model.getController().currentBatchProcessingProgressProperty.set(-1.0));
 
-    caller.log("Batch " + batchIndex + ": Data posted in " + getLoadDurationMillis() + "ms, waiting for container ready...");
-    while(!caller.isContainerReady()){
+    model.log("Batch " + batchIndex + ": Data posted in " + getLoadDurationMillis() + "ms, waiting for container ready...");
+    while(!model.isContainerReady()){
       Thread.sleep(500);
     }
     doneTime = Instant.now();
-    caller.log("Batch " + batchIndex + ": Data processing by container done in " + getBatchDurationMillis() + "ms");
+    model.log("Batch " + batchIndex + ": Data processing by container done in " + getBatchDurationMillis() + "ms");
+    Platform.runLater(()-> model.getController().currentBatchIsLoadingProperty.set(true));
+    Platform.runLater(()-> model.getController().currentBatchIsProcessingProperty.set(true));
+    Platform.runLater(()-> model.getController().currentBatchLoadingProgressProperty.set(1.0));
+    Platform.runLater(()-> model.getController().currentBatchProcessingProgressProperty.set(1.0));
+
+    updatePanes(false, false);
     done = true;
 
-    caller.log("Batch " + batchIndex + ": Objects per minute: " + getOpm() );
+    model.log("Batch " + batchIndex + ": Objects per minute: " + getOpm() );
+  }
+
+  private void updatePanes(boolean loading, boolean processing) {
+//    caller.currentBatchIsLoading.setValue(loading);
+//    caller.currentBatchIsProcessing.setValue(processing);
+//    try{
+//      caller.currentBatchIsLoading.notifyAll();
+//    }catch (IllegalMonitorStateException e){
+//      System.out.println(e.getMessage());
+//    }
+//    try{
+//      caller.currentBatchIsProcessing.notifyAll();
+//    }catch (IllegalMonitorStateException e){}
   }
 
 

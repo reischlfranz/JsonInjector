@@ -6,7 +6,9 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.shape.Line?>
@@ -25,32 +27,41 @@
          <children>
             <Label layoutX="14.0" layoutY="14.0" styleClass="sectionHeader" text="Remaining JSON Objects" />
             <Label fx:id="remainLblTotal" alignment="CENTER_RIGHT" layoutX="219.0" layoutY="28.0" prefHeight="17.0" prefWidth="145.0" text="y.yyy.yyy" />
-            <Button layoutX="14.0" layoutY="45.0" mnemonicParsing="false" onAction="#startInjection" prefHeight="25.0" prefWidth="70.0" text="Start" />
-            <Button disable="true" layoutX="101.0" layoutY="45.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Pause" />
+            <Button fx:id="startBtn" layoutX="14.0" layoutY="45.0" mnemonicParsing="false" onAction="#startInjection" prefHeight="25.0" prefWidth="70.0" text="Start" />
+            <Button fx:id="pauseBtn" disable="true" layoutX="101.0" layoutY="45.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Pause">
+               <tooltip>
+                  <Tooltip text="Pause not implemented yet" />
+               </tooltip></Button>
             <Label layoutX="14.0" layoutY="101.0" text="Time elapsed:" />
             <Label layoutX="14.0" layoutY="127.0" text="Estimated completion time:" />
             <Label layoutX="201.0" layoutY="101.0" text="Label" />
-            <Label layoutX="200.0" layoutY="127.0" text="Label" />
+            <Label layoutX="200.0" layoutY="127.0" text="NAN" />
          </children>
       </Pane>
       <Pane layoutX="14.0" layoutY="247.0" prefHeight="255.0" prefWidth="1044.0" style="-fx-background-color: #cccccc;" styleClass="mainContentPane">
          <children>
-            <Label layoutX="22.0" layoutY="41.0" prefHeight="17.0" prefWidth="186.0" text="Loading data into container:" />
+            <Label layoutX="22.0" layoutY="41.0" prefHeight="17.0" prefWidth="186.0" text="Injecting data into container:" />
             <Label layoutX="10.0" layoutY="10.0" styleClass="sectionHeader" text="Current Batch" />
-            <ProgressBar fx:id="progrBarBatch" layoutX="22.0" layoutY="59.0" prefHeight="18.0" prefWidth="1000.0" progress="0.0" />
+            <ProgressBar fx:id="progrBarBatch" layoutX="22.0" layoutY="59.0" prefHeight="18.0" prefWidth="1000.0" />
             <Label fx:id="totalLblBatch" alignment="CENTER_RIGHT" layoutX="950.0" layoutY="41.0" prefHeight="17.0" prefWidth="72.0" text="y.yyy.yyy" />
             <Label layoutX="708.0" layoutY="93.0" text="Current batch time:" />
             <Label layoutX="708.0" layoutY="120.0" text="Est. objects per minute:" />
             <Label fx:id="curBatchTimeLbl" layoutX="863.0" layoutY="93.0" text="Label" />
             <Label fx:id="curBatchOPMLbl" layoutX="863.0" layoutY="120.0" text="Label" />
-            <Pane fx:id="batchProcessingWaitPane" layoutX="69.0" layoutY="94.0" prefHeight="87.0" prefWidth="222.0">
+            <Pane fx:id="batchProcessingWaitPane" layoutX="193.0" layoutY="94.0" prefHeight="87.0" prefWidth="114.0">
                <children>
-                  <Label style="-fx-text-fill: red;" text="Waiting for processing to be finished..." />
-                  <ProgressIndicator layoutX="6.0" layoutY="20.0" />
+                  <Label style="-fx-text-fill: red;" text="Processing data..." />
+                  <ProgressIndicator fx:id="batchProcessingProgr" layoutX="6.0" layoutY="20.0" />
                </children>
             </Pane>
             <Label fx:id="remainLblBatch" alignment="CENTER_RIGHT" layoutX="785.0" layoutY="41.0" prefHeight="17.0" prefWidth="145.0" text="x.xxx.xxx" />
             <Label layoutX="936.0" layoutY="41.0" text="/" />
+            <Pane fx:id="batchLoadingWaitPane" layoutX="67.0" layoutY="94.0" prefHeight="87.0" prefWidth="114.0">
+               <children>
+                  <Label style="-fx-text-fill: red;" text="Loading data..." />
+                  <ProgressIndicator fx:id="batchLoadingProgr" layoutX="6.0" layoutY="20.0" />
+               </children>
+            </Pane>
          </children>
       </Pane>
       <Pane layoutX="14.0" layoutY="516.0" prefHeight="116.0" prefWidth="1044.0" style="-fx-background-color: #cccccc;" styleClass="mainContentPane">
@@ -72,8 +83,14 @@
             <Label layoutX="14.0" layoutY="38.0" text="Target time per batch:" />
             <Label layoutX="295.0" layoutY="38.0" text="minutes" />
             <Label layoutX="14.0" layoutY="79.0" text="Objects in next batch:" />
-            <Spinner fx:id="nextBatchTargetField" editable="true" layoutX="139.0" layoutY="34.0" onInputMethodTextChanged="#setNextBatchMinutes" prefHeight="25.0" prefWidth="145.0" />
+            <Spinner fx:id="nextBatchTargetField" editable="true" layoutX="139.0" layoutY="34.0" onInputMethodTextChanged="#setNextBatchMinutes" prefHeight="25.0" prefWidth="145.0">
+               <valueFactory>
+                  <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="1" max="9999" min="1" />
+               </valueFactory>
+            </Spinner>
             <Label fx:id="nextBatchObjCntLabel" layoutX="151.0" layoutY="79.0" text="xxx" />
+            <Label layoutX="14.0" layoutY="105.0" text="Next batch #:" />
+            <Label fx:id="nextBatchIndexLabel" layoutX="151.0" layoutY="105.0" text="xxx" />
          </children>
       </Pane>
       <TextField fx:id="restUrlField" layoutX="257.0" layoutY="14.0" prefHeight="25.0" prefWidth="801.0" />

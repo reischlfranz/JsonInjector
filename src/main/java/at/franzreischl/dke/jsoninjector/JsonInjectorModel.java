@@ -1,14 +1,9 @@
 package at.franzreischl.dke.jsoninjector;
 
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleLongProperty;
-import org.json.JSONArray;
+import javafx.beans.property.*;
 import org.json.JSONObject;
 
 import javax.ws.rs.ProcessingException;
-import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Response;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -22,41 +17,45 @@ import java.util.*;
 
 public class JsonInjectorModel {
 
-  private long nextObject = 0, batchIndex = 0;
+  private Thread injectorThread;
+  private JsonInjectorController controller;
 
-  SimpleLongProperty remainingObjectsProperty = new SimpleLongProperty(0);
-  SimpleLongProperty totalObjectsProperty = new SimpleLongProperty(0);
-  SimpleLongProperty nextBatchSizeProperty = new SimpleLongProperty(0);
-  SimpleLongProperty currentBatchSizeProperty = new SimpleLongProperty(0);
-  SimpleLongProperty currentBatchRemainProperty = new SimpleLongProperty(0);
-
-  SimpleDoubleProperty currentBatchProgress = new SimpleDoubleProperty(0.25);
-
-  Property<Boolean> runs = new SimpleBooleanProperty(false);
 
 
   private String containerUrl;
-  private RestClient dataInputClient;
+  RestClient dataInputClient;
   private RestClient statusReadClient;
   private PrintWriter pw;
   private StatusChecker statusChecker;
   DateTimeFormatter fileDateFormat;
   DateTimeFormatter logDateFormat;
+  int targetMinutesPerBatch;
+
+  ArrayList<Object> dataList;
+  ArrayList<BatchDataInjector> batches;
+
+
+  private Thread statusCheckerThread;
+
+
+
 
   public void setTargetMinutesPerBatch(int targetMinutesPerBatch) {
     this.targetMinutesPerBatch = targetMinutesPerBatch;
   }
 
-  private int targetMinutesPerBatch;
+  public JsonInjectorController getController() {
+    return controller;
+  }
 
-  private BatchDataInjector lastBatch, nextBatch, currentBatch;
+  public void setController(JsonInjectorController controller) {
+    this.controller = controller;
+  }
 
-
-
-  private ArrayList<Object> dataList;
-
-  private Thread statusCheckerThread;
-
+  /**Constructor
+   *
+   * @throws IOException
+   */
   public JsonInjectorModel() throws IOException {
     fileDateFormat = DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
     logDateFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss.nn").localizedBy(Locale.getDefault()).withZone(TimeZone.getDefault().toZoneId());
@@ -67,6 +66,8 @@ public class JsonInjectorModel {
     pw = new PrintWriter(bw);
 
     log("Application started");
+    InjectorHelper.getInstance().setModel(this);
+    injectorThread = new Thread(InjectorHelper.getInstance());
   }
 
   public String getContainerUrl() {
@@ -117,10 +118,8 @@ public class JsonInjectorModel {
   }
 
   public void close(){
-    System.out.println("Gracefully shutting down the application");
-    log("Application shutdown");
-//    pw.println(String.format("[%s] Application shutdown",logDateFormat.format(ZonedDateTime.now())));
-    pw.flush();
+    log("Gracefully shutting down the application");
+    // Closing the File writer for log file
     pw.close();
   }
 
@@ -133,76 +132,25 @@ public class JsonInjectorModel {
   public void setDataList(List<Object> objects) {
     if(objects == null) return;
     dataList = new ArrayList<>(objects);
-    remainingObjectsProperty.set(objects.size());
+    controller.remainingObjectsProperty.set(objects.size());
+    controller.totalObjectsProperty.set(objects.size());
     log(objects.size() + " JSON objects entered");
   }
 
-//  public JSONArray getJsonData() {
-//    return this.jsonObjects;
-//  }
-
-
-  void prepareNextBatch(){
-    boolean isLastBatch = false;
-    long nextBatchSize;
-    if(nextObject < 0) {
-      nextBatch = null;
-      return;
-
-    }
-    if(nextObject >= dataList.size()) throw new IndexOutOfBoundsException("Is all done, dude!");
-
-    if (lastBatch == null ){
-       nextBatchSize = 1;
-     }else if(targetMinutesPerBatch * lastBatch.getOpm() < lastBatch.size()
-              || Math.abs( targetMinutesPerBatch * lastBatch.getOpm() - lastBatch.size()) < 2){
-       nextBatchSize = (long) (targetMinutesPerBatch * lastBatch.getOpm());
-    }else{
-        nextBatchSize = (long) (( targetMinutesPerBatch * lastBatch.getOpm() - lastBatch.size()) *  0.60 +  targetMinutesPerBatch * lastBatch.getOpm());
-    }
-    if(nextBatchSize >= dataList.size() - nextObject - 1){
-      nextBatchSize = dataList.size() - nextObject - 1;
-      isLastBatch = true;
-    }
-
-    List<Object> nextBatchData = dataList.subList((int)nextObject, (int)(nextObject + nextBatchSize));
-
-
-    nextBatch = new BatchDataInjector(this.dataInputClient, nextBatchData, this);
-    nextObject += nextBatchSize;
-
-    log("Next batch prepared, size: " + nextBatch.size());
-    if(isLastBatch){nextObject = -1;}
-  }
-
-  void startInjection(){
-    runs.setValue(true);
-    prepareNextBatch();
-    while(runs.getValue() && nextBatch != null){
-      log("Data injection ongoing...");
-
-      currentBatch = nextBatch;
-      nextBatch = null;
-
-      // bind properties for current batch
-
-      try {
-        currentBatch.startInject();
-      } catch (IllegalAccessException | InterruptedException e) {
-        e.printStackTrace();
-        runs.setValue(false);
-        return;
-      }
-
-      lastBatch = currentBatch;
-      currentBatch = null;
-
-      prepareNextBatch();
-    }
-    log("All done: " + BatchDataInjector.batchIndexCounter + " Batches done!" );
-
+  public void startInjection() {
+    if(!injectorThread.isAlive()) injectorThread.start();
 
   }
+
+  SimpleLongProperty testProp = new SimpleLongProperty(0);
+
+
+  public void setPropNextBatchSize(long val){
+//    controller.nextBatchSizeProperty.set(val);
+    testProp.set(val);
+  }
+
+
 
 
 
