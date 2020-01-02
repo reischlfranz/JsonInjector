@@ -11,16 +11,32 @@ import java.util.spi.CurrencyNameProvider;
 
 public class InjectorHelper implements Runnable {
   private static InjectorHelper instance;
+  SimpleBooleanProperty isRunningProperty = new SimpleBooleanProperty(false);
+  SimpleLongProperty nextObjectIndexProperty = new SimpleLongProperty(0);
 
   private JsonInjectorModel model;
-  private boolean isRunning = false;
-  private long nextObject = 0, batchIndex = 0;
+  private long batchIndex = 0;
   private BatchDataInjector lastBatch, nextBatch, currentBatch;
 
   public static InjectorHelper getInstance() {
     if(instance == null) instance = new InjectorHelper();
     return instance;
   }
+
+  public void setNextObject(long nextObject) throws IndexOutOfBoundsException {
+    if(nextObject < nextObjectIndexProperty.getValue()){
+      nextObjectIndexProperty.notify();
+      throw new IndexOutOfBoundsException("Only larger values than previous are allowed!");
+    }
+    nextObjectIndexProperty.set(nextObject);
+  }
+
+  public long getNextObject() {
+    return nextObjectIndexProperty.getValue();
+  }
+
+
+
 
 
   private InjectorHelper(){
@@ -34,9 +50,9 @@ public class InjectorHelper implements Runnable {
 
   @Override
   public void run() {
-    if(nextObject<0) return;
-    isRunning = true;
-    while(isRunning){
+    if(nextObjectIndexProperty.getValue()<0) return;
+    isRunningProperty.set(true);
+    while(isRunningProperty.getValue()){
       model.log("Data injection ongoing...");
 
       currentBatch = nextBatch;
@@ -47,7 +63,7 @@ public class InjectorHelper implements Runnable {
 
       if(currentBatch == null && nextBatch != null) continue;
       if(currentBatch == null && nextBatch == null) {
-        isRunning = false;
+        isRunningProperty.set(false);
         break;
       }
 
@@ -64,7 +80,9 @@ public class InjectorHelper implements Runnable {
         e.printStackTrace();
         nextBatch = currentBatch;
         currentBatch = null;
-        isRunning = false;
+        isRunningProperty.set(false);
+        model.log("ERROR occured during batch "+batchIndex);
+        model.log(e.getMessage());
         return;
       }
       model.batches.add(currentBatch);
@@ -76,7 +94,8 @@ public class InjectorHelper implements Runnable {
       Platform.runLater(()->model.getController().opmLastBatchProperty.set(model.getLastBatchOpm()));
       Platform.runLater(()->model.getController().opmTotalProperty.set(model.getTotalOpm()));
       Platform.runLater(()->model.getController().remainingObjectsProperty.set(
-              model.dataList.size() - model.getDoneObjects()));
+              (nextObjectIndexProperty.getValue() < 0)? 0 :
+              model.dataList.size() - nextObjectIndexProperty.getValue()));
       Platform.runLater(()->model.getController().totalObjectsDoneProperty.set(model.getDoneObjects()));
       Platform.runLater(()->model.getController().avgBatchSizeProperty.set(model.getAvgBatchSize()));
 
@@ -99,24 +118,24 @@ public class InjectorHelper implements Runnable {
   }
 
   public void stop() {
-    isRunning = false;
+    isRunningProperty.set(false);
   }
 
   void prepareNextBatch(){
-    if(nextObject >= model.dataList.size()) throw new IndexOutOfBoundsException("Index bigger than object list!");
+    if(nextObjectIndexProperty.getValue() >= model.dataList.size()) throw new IndexOutOfBoundsException("Index bigger than object list!");
 
     boolean isLastBatch = false;
     long nextBatchSize;
     BatchDataInjector sizeRefBatch = (currentBatch==null) ? lastBatch:currentBatch;
 
-    if(nextObject < 0) {
+    if(nextObjectIndexProperty.getValue() < 0) {
       nextBatch = null;
       Platform.runLater(()->model.getController().nextBatchIndexProperty.set(-1));
       Platform.runLater(()->model.getController().nextBatchSizeProperty.set(-1));
       return;
     }
 
-    if (nextObject == 0 || lastBatch == null) {
+    if (nextObjectIndexProperty.getValue() == 0 || lastBatch == null) {
       nextBatchSize = 1;
     }else if(model.targetMinutesPerBatch * lastBatch.getOpm() < sizeRefBatch.size()
              || Math.abs( model.targetMinutesPerBatch * lastBatch.getOpm() - sizeRefBatch.size()) < 2){
@@ -127,20 +146,20 @@ public class InjectorHelper implements Runnable {
     }
 
     // check if this is the last batch - no more objects remaining after that
-    if(nextObject + nextBatchSize > model.dataList.size() -1 ){
-      nextBatchSize = model.dataList.size() - nextObject;
+    if(nextObjectIndexProperty.getValue() + nextBatchSize > model.dataList.size() -1 ){
+      nextBatchSize = model.dataList.size() - nextObjectIndexProperty.getValue();
       isLastBatch = true;
     }
 
-    List<Object> nextBatchData = model.dataList.subList((int)nextObject, (int)(nextObject + nextBatchSize));
+    List<Object> nextBatchData = model.dataList.subList(nextObjectIndexProperty.intValue(), (int)(nextObjectIndexProperty.intValue() + nextBatchSize));
 
 
     nextBatch = new BatchDataInjector(model.dataInputClient, nextBatchData, model);
-    nextObject += nextBatchSize;
+    nextObjectIndexProperty.set(nextObjectIndexProperty.getValue() + nextBatchSize);
 
     model.log("Next batch prepared, size: " + nextBatch.size());
     if(isLastBatch){
-      nextObject = -1;
+      nextObjectIndexProperty.set(-1);
     }
 
     // bind properties for next batch

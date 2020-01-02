@@ -1,9 +1,6 @@
 package at.franzreischl.dke.jsoninjector;
 
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.*;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -103,6 +100,9 @@ public class JsonInjectorController {
   private Spinner<Integer> nextBatchTargetField;
 
   @FXML
+  private Spinner<Integer> nextObjectField;
+
+  @FXML
   private Label nextBatchObjCntLabel;
 
   @FXML
@@ -116,6 +116,8 @@ public class JsonInjectorController {
   // Remaining Objects pane
   SimpleLongProperty remainingObjectsProperty = new SimpleLongProperty(0);
   SimpleLongProperty totalObjectsProperty = new SimpleLongProperty(0);
+  SimpleBooleanProperty injectionRunningProperty = new SimpleBooleanProperty();
+  SimpleIntegerProperty nextObjectIndexProperty = new SimpleIntegerProperty(0);
 
   // Next batch pane
   SimpleLongProperty nextBatchIndexProperty = new SimpleLongProperty(-1);
@@ -158,6 +160,17 @@ public class JsonInjectorController {
     nextBatchTargetField.valueProperty().addListener((obs,oldVal,newVal)->{
       model.setTargetMinutesPerBatch(newVal);
     });
+    // Change next object index...?
+    nextObjectField.valueProperty().addListener((obs,oldVal,newVal)->{
+      model.log("changign bvalue + "  + newVal + " from " + oldVal + " at " + obs);
+      try{
+        model.setNextObjectIndex(newVal);
+      }catch (Exception e) {
+        model.log("[ERROR] Setting next object to " + newVal + " is not allowed; " +
+                  "Needs to be larger than previously to prevent injecting double objects");
+        nextObjectField.getValueFactory().setValue(oldVal);
+      }
+    });
   }
 
   public JsonInjectorModel getModel() {
@@ -167,10 +180,25 @@ public class JsonInjectorController {
   public void setModel(JsonInjectorModel model) {
     this.model = model;
     model.setController(this);
+
+    // Bind value properties for Controller
+    injectionRunningProperty  .bind(InjectorHelper.getInstance().isRunningProperty);
+//    nextObjectIndexProperty   .bind(InjectorHelper.getInstance().nextObjectIndexProperty);
+
     // Bind value properties for UI
     // Objects remaining
     remainLblTotal.textProperty()               .bind(remainingObjectsProperty.asString() );
     remainLblBatch.textProperty()               .bind(currentBatchRemainProperty.asString() );
+    startBtn.disableProperty()                  .bind(injectionRunningProperty);
+    pauseBtn.disableProperty()                  .bind(injectionRunningProperty.not());
+    nextObjectField.disableProperty()           .bind(injectionRunningProperty);
+    //nextObjectField.getValueFactory().valueProperty().bind(nextObjectIndexProperty.asObject());
+
+    InjectorHelper.getInstance().nextObjectIndexProperty.addListener((obs,oldVal,newVal)->{
+//      model.log("Next object set to: " + newVal);
+      this.nextObjectField.getValueFactory().setValue(newVal.intValue());
+    });
+
 
     // Next batch
     nextBatchObjCntLabel.textProperty()         .bind(nextBatchSizeProperty.asString());
@@ -285,11 +313,21 @@ public class JsonInjectorController {
 
   @FXML
   private void startInjection(){
-    startBtn.setDisable(true);
+//    startBtn.setDisable(true);
     model.log("Start button pressed!");
     model.startInjection();
+//    pauseBtn.setDisable(false);
   }
 
+  @FXML
+  private void pauseInjection(){
+//    pauseBtn.setDisable(true);
+    model.log("Pause button pressed!");
+    model.pauseInjection();
+//    startBtn.setDisable(false);
+  }
 
+  public void setNextObjectField(long nextObjectIndex) {
 
+  }
 }

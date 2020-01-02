@@ -68,7 +68,6 @@ public class JsonInjectorModel {
 
     log("Application started");
     InjectorHelper.getInstance().setModel(this);
-    injectorThread = new Thread(InjectorHelper.getInstance());
   }
 
   public String getContainerUrl() {
@@ -139,7 +138,11 @@ public class JsonInjectorModel {
   }
 
   public void startInjection() {
-    if(!injectorThread.isAlive()) injectorThread.start();
+
+    if(injectorThread == null || !injectorThread.isAlive()) {
+      injectorThread = new Thread(InjectorHelper.getInstance());
+      injectorThread.start();
+    }
 
   }
 
@@ -174,9 +177,18 @@ public class JsonInjectorModel {
   }
 
 
+  public void pauseInjection() {
+    if(injectorThread.isAlive()){
+      InjectorHelper.getInstance().stop();
+
+    }
 
 
+  }
 
+  public void setNextObjectIndex(long nextObject) throws IndexOutOfBoundsException{
+    System.out.println("Setting next Object index to " + nextObject);
+    InjectorHelper.getInstance().setNextObject(nextObject);
 
-
+  }
 }
