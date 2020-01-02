@@ -29,9 +29,9 @@
             <Label layoutX="239.0" layoutY="127.0" text="Est. completion time:" />
             <Label layoutX="139.0" layoutY="127.0" text="NAN" />
             <Label layoutX="364.0" layoutY="127.0" text="NAN" />
-            <Spinner fx:id="nextObjectField" layoutX="227.0" layoutY="79.0" prefHeight="25.0" prefWidth="145.0">
+            <Spinner fx:id="nextObjectField" editable="true" layoutX="227.0" layoutY="79.0" prefHeight="25.0" prefWidth="145.0">
                <valueFactory>
-                  <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="0" max="9999" min="0" />
+                  <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="0" max="2147483647" min="0" />
                </valueFactory>
             </Spinner>
             <Label layoutX="14.0" layoutY="53.0" text="Objects remaining:" />

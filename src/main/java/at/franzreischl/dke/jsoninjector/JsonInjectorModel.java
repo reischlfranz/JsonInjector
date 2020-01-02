@@ -188,7 +188,7 @@ public class JsonInjectorModel {
   }
 
   public void setNextObjectIndex(long nextObject) throws IndexOutOfBoundsException{
-    System.out.println("Setting next Object index to " + nextObject);
+//    System.out.println("Setting next Object index to " + nextObject);
     InjectorHelper.getInstance().setNextObject(nextObject);
 
   }

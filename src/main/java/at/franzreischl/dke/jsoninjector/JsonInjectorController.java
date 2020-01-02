@@ -162,7 +162,6 @@ public class JsonInjectorController {
     });
     // Change next object index...?
     nextObjectField.valueProperty().addListener((obs,oldVal,newVal)->{
-      model.log("changign bvalue + "  + newVal + " from " + oldVal + " at " + obs);
       try{
 //        nextObjectField.getValueFactory().setValue(newVal);
         model.setNextObjectIndex(newVal);
