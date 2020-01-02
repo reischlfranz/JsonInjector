@@ -152,6 +152,11 @@ public class JsonInjectorController {
                 x.getStyleClass().add("isHidden");
            });
     batchProcessingWaitPane.getStyleClass().add("isHidden");
+
+    // Change target minutes...?
+    nextBatchTargetField.valueProperty().addListener((obs,oldVal,newVal)->{
+      model.setTargetMinutesPerBatch(newVal);
+    });
   }
 
   public JsonInjectorModel getModel() {
@@ -236,13 +241,6 @@ public class JsonInjectorController {
       restUrlField.setDisable(false);
     }
     checkReqs();
-  }
-
-
-  @FXML
-  void setNextBatchMinutes(InputMethodEvent event) {
-    model.setTargetMinutesPerBatch(nextBatchTargetField.getValue());
-
   }
 
   private void checkReqs(){
