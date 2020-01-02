@@ -164,6 +164,7 @@ public class JsonInjectorController {
     nextObjectField.valueProperty().addListener((obs,oldVal,newVal)->{
       model.log("changign bvalue + "  + newVal + " from " + oldVal + " at " + obs);
       try{
+//        nextObjectField.getValueFactory().setValue(newVal);
         model.setNextObjectIndex(newVal);
       }catch (Exception e) {
         model.log("[ERROR] Setting next object to " + newVal + " is not allowed; " +
@@ -183,7 +184,7 @@ public class JsonInjectorController {
 
     // Bind value properties for Controller
     injectionRunningProperty  .bind(InjectorHelper.getInstance().isRunningProperty);
-//    nextObjectIndexProperty   .bind(InjectorHelper.getInstance().nextObjectIndexProperty);
+    nextObjectIndexProperty   .bind(InjectorHelper.getInstance().nextObjectIndexProperty);
 
     // Bind value properties for UI
     // Objects remaining
@@ -224,6 +225,8 @@ public class JsonInjectorController {
 
     // set initial model values
     model.setTargetMinutesPerBatch( nextBatchTargetField.getValue());
+    model.setNextObjectIndex( nextObjectField.getValue());
+
 
   }
 

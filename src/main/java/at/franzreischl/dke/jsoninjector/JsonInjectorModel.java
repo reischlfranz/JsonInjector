@@ -155,7 +155,8 @@ public class JsonInjectorModel {
   }
 
   public long getDoneObjects(){
-    return batches.stream().map(x -> x.size()).reduce(0L,(x,y)->x+y);
+    return (InjectorHelper.getInstance().nextObjectIndexProperty.getValue() - InjectorHelper.getInstance().currentBatchSizeProperty.getValue());
+//    return batches.stream().map(x -> x.size()).reduce(0L,(x,y)->x+y);
   }
   public long getDoneDurationMillis(){
     return batches.stream().map(x -> x.getBatchDurationMillis()).reduce(0L,(x,y)->x+y);
