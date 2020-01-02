@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Scanner;
 
 public class JsonInjectorController {
 
@@ -217,11 +218,38 @@ public class JsonInjectorController {
     model.log("Opening JSON file "+ jsonFile.getAbsolutePath());
     FileReader fr = new FileReader(jsonFile);
     BufferedReader br = new BufferedReader(fr);
+    StringBuilder sb = new StringBuilder();
 
-    String s = br.lines().reduce(String::concat).orElse("[]");
+
+    FileInputStream inputStream = null;
+    Scanner sc = null;
+
+
+    try {
+      inputStream = new FileInputStream(jsonFile);
+      sc = new Scanner(inputStream, "UTF-8");
+      while (sc.hasNextLine()) {
+        String line = sc.nextLine();
+        sb.append(line);
+      }
+      // note that Scanner suppresses exceptions
+      if (sc.ioException() != null) {
+        throw sc.ioException();
+      }
+    } finally {
+      if (inputStream != null) {
+        inputStream.close();
+      }
+      if (sc != null) {
+        sc.close();
+      }
+    }
     //  System.out.println(s);
     fileNameLabel.setText(jsonFile.getAbsolutePath());
-    model.setDataList(new JSONArray(s).toList());
+    model.setDataList(new JSONArray(sb.toString()).toList());
+    sb = null;
+    br.close();
+    fr.close();
 
     this.chkJsonFile.setSelected(true);
     this.filePickerButton.setDisable(true);
